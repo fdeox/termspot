@@ -30,7 +30,7 @@ spicetify apply
 | **Matrix** — follow the white rabbit ![Matrix](screenshots/scheme-Matrix.jpg) | **Gold** — the executive mainframe ![Gold](screenshots/scheme-Gold.jpg) |
 | **Frostbyte** — nord-inspired ice ![Frostbyte](screenshots/scheme-Frostbyte.jpg) | **Nightbloom** — catppuccin-inspired pastel ![Nightbloom](screenshots/scheme-Nightbloom.jpg) |
 | **Fangs** — dracula-inspired ![Fangs](screenshots/scheme-Fangs.jpg) | **Paper** — e-ink daylight ![Paper](screenshots/scheme-Paper.jpg) |
-| **Gruvbox** ![Gruvbox](screenshots/scheme-Gruvbox.jpg) | |
+| **Gruvbox** ![Gruvbox](screenshots/scheme-Gruvbox.jpg) | **Bios** — press DEL to enter setup ![Bios](screenshots/scheme-Bios.jpg) |
 | **GruvboxHard** ![GruvboxHard](screenshots/scheme-GruvboxHard.jpg) | **EverforestDarkHard** ![EverforestDarkHard](screenshots/scheme-EverforestDarkHard.jpg) |
 | **EverforestDarkMedium** ![EverforestDarkMedium](screenshots/scheme-EverforestDarkMedium.jpg) | **EverforestDarkSoft** ![EverforestDarkSoft](screenshots/scheme-EverforestDarkSoft.jpg) |
 
