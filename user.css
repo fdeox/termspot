@@ -701,7 +701,7 @@ img[src*="equaliser"] {
     border-bottom: var(--progress-bar-height) dashed var(--fg-color) !important;
 }
 .player-controls__buttons {
-    margin-bottom: 0;
+    margin-bottom: 10px;
 }
 .player-controls__buttons,
 .main-nowPlayingBar-extraControls {

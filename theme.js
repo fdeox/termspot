@@ -652,7 +652,16 @@
         row.className = "t-row";
         const prompt = document.createElement("span");
         prompt.className = "t-prompt";
-        prompt.textContent = "termspot:~ $";
+        // match the Terminal Greeting banner: <name>@termspot
+        let promptName = "user";
+        try {
+            promptName =
+                JSON.parse(window.localStorage.getItem("terminal-greeting:settings") || "{}").name ||
+                "user";
+        } catch (e) {
+            /* keep "user" */
+        }
+        prompt.textContent = promptName + "@termspot:~ $";
         termIn = document.createElement("input");
         termIn.type = "text";
         termIn.spellcheck = false;
