@@ -33,7 +33,8 @@ spicetify apply
 
 ## Signature features
 
-- **Hidden command terminal** — press `:` anywhere and a terminal drops down.
+- **Hidden command terminal** — press `:` anywhere (vim style) and a terminal
+  drops down; press `Esc` (or type `exit`) to close it.
   `play <song>`, `search`, `queue`, `vol 60`, `next`, `np`… full music control
   without touching the mouse. Plus `theme <name>` for live scheme previews,
   `matrix`, `coffee`, `1994` and more — start with `help`.
