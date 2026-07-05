@@ -1,6 +1,6 @@
 // termspot theme.js — ASCII album art, ASCII progress bar, track-load log,
-// monochrome phosphor covers and live CRT settings.
-// Everything is configurable from Profile menu → "termspot settings".
+// monochrome phosphor covers, live CRT settings and a hidden command terminal.
+// Press ":" anywhere (outside a text field) to open the terminal. Try `help`.
 (function termspot() {
     if (
         !(
@@ -22,7 +22,7 @@
         ascii: true, // ASCII album art in the now playing view
         mono: true, // monochrome phosphor covers (hover restores color)
         asciiProgress: true, // [████░░░░] progress bar
-        trackLog: true, // "reading: track_1947.dat" toast on song change
+        trackLog: true, // "reading: track.dat" toast on song change
         scanlines: true,
         vignette: true,
         poweron: true,
@@ -55,12 +55,65 @@
         document.body.classList.toggle("termspot-aprog", settings.asciiProgress);
     }
 
+    /* ---- color schemes (for the `theme` command; session-only preview) ---- */
+    const SPICE_KEYS = [
+        "accent", "accent-active", "accent-inactive", "banner", "border-active",
+        "border-inactive", "header", "highlight", "main", "notification",
+        "notification-error", "subtext", "text",
+    ];
+    const SCHEMES = {
+        Fdeox: ["2ee66b","58ff8f","0b0f0c","58ff8f","2ee66b","1e3327","3f5c4a","142119","0b0f0c","4aa3df","ff5555","8fbf9f","d2f0d8"],
+        FdeoxAmber: ["e69500","ffb000","0f0b06","ffb000","e69500","332609","5c4a1f","211a0c","0f0b06","4aa3df","ff5555","bf9f6f","f0e0c2"],
+        Synthwave: ["f92aad","ff6ac1","120b1e","ff6ac1","f92aad","2a1f47","6f5a9e","1e1433","120b1e","36f9f6","ff5555","9a8fbf","e8e3ff"],
+        Arctic: ["2ec9ff","6fe3ff","0a1220","6fe3ff","2ec9ff","1a2c47","3f5c7a","12203a","0a1220","5e81ac","ff5c5c","7fa3bf","d8ecf7"],
+        Bloodmoon: ["d43f3f","ff5c5c","120808","ff5c5c","d43f3f","331414","5c2f2f","211010","120808","4aa3df","ffb000","bf8f8f","f0d8d8"],
+        Ultraviolet: ["8b5cf6","a78bfa","0e0a1a","a78bfa","8b5cf6","241a47","5a4a8f","191033","0e0a1a","4aa3df","ff5555","9a8fbf","e6ddff"],
+        Paper: ["1b7a4a","0f5c38","f2ede4","1b7a4a","1b7a4a","d8cfc0","8a8070","e4dccc","f2ede4","286983","b4637a","6f675c","3b3630"],
+        Gruvbox: ["98971a","b8bb26","282828","b8bb26","b8bb26","3c3836","665c54","7c6f64","282828","458588","cc241d","bdae93","fbf1c7"],
+        GruvboxHard: ["98971a","b8bb26","1d2021","b8bb26","b8bb26","3c3836","665c54","7c6f64","1d2021","458588","cc241d","bdae93","ebdbb2"],
+        EverforestDarkHard: ["a7c080","a7c080","272e33","a7c080","a7c080","2e383c","414b50","3c4841","272e33","83c092","e67e80","859289","d3c6aa"],
+        EverforestDarkMedium: ["a7c080","a7c080","2d353b","a7c080","a7c080","343f44","475258","425047","2d353b","83c092","e67e80","859289","d3c6aa"],
+        EverforestDarkSoft: ["a7c080","a7c080","333c43","a7c080","a7c080","3a464c","4d5960","48584E","333c43","83c092","e67e80","859289","d3c6aa"],
+    };
+    const hexRgb = (h) =>
+        [h.slice(0, 2), h.slice(2, 4), h.slice(4, 6)].map((x) => parseInt(x, 16)).join(",");
+
+    function applyScheme(name) {
+        const key = Object.keys(SCHEMES).find((k) => k.toLowerCase() === String(name).toLowerCase());
+        if (!key) return null;
+        const vals = SCHEMES[key];
+        const r = document.documentElement.style;
+        SPICE_KEYS.forEach((k, i) => {
+            r.setProperty("--spice-" + k, "#" + vals[i]);
+            r.setProperty("--spice-rgb-" + k, hexRgb(vals[i]));
+        });
+        const accent = vals[0], active = vals[1];
+        r.setProperty("--spice-button", "#" + accent);
+        r.setProperty("--spice-button-active", "#" + active);
+        r.setProperty("--spice-rgb-button", hexRgb(accent));
+        r.setProperty("--spice-rgb-button-active", hexRgb(active));
+        return key;
+    }
+    function resetScheme() {
+        const r = document.documentElement.style;
+        SPICE_KEYS.forEach((k) => {
+            r.removeProperty("--spice-" + k);
+            r.removeProperty("--spice-rgb-" + k);
+        });
+        ["button", "button-active"].forEach((k) => {
+            r.removeProperty("--spice-" + k);
+            r.removeProperty("--spice-rgb-" + k);
+        });
+    }
+
     /* ---- shared css ---------------------------------------------------- */
+    // note: the now-playing sidebar cover is deliberately NOT in this list —
+    // that spot belongs to the ASCII art
     const COVERS =
         ".main-cardImage-image, .view-homeShortcutsGrid-imageContainer img," +
         " .main-trackList-rowImage, .main-coverSlotCollapsed-container img," +
         " .main-nowPlayingWidget-coverArt img, .x-entityImage-image," +
-        " .main-entityHeader-image, .main-nowPlayingView-coverArt img";
+        " .main-entityHeader-image";
 
     const style = document.createElement("style");
     style.id = "termspot-js-style";
@@ -88,12 +141,12 @@
         "  filter: none;",
         "}",
         // ascii progress bar: hide the real bar's paint, keep its hit area
-        ".termspot-aprog .playback-bar [data-testid=\"progress-bar\"] { opacity: 0 !important; }",
+        '.termspot-aprog .playback-bar [data-testid="progress-bar"] { opacity: 0 !important; }',
         "#termspot-progress {",
         "  position: absolute; inset: 0; z-index: 5;",
         "  display: flex; align-items: center; justify-content: center;",
         '  font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important;',
-        "  font-size: 12px !important; line-height: 1 !important;",
+        "  font-size: 13px !important; line-height: 1 !important;",
         "  color: var(--spice-accent-active); white-space: pre;",
         "  text-shadow: 0 0 var(--crt-glow, 6px) currentColor;",
         "  pointer-events: none; user-select: none;",
@@ -108,6 +161,31 @@
         "  background: rgba(var(--spice-rgb-main), 0.85); padding: 8px 12px;",
         "  border: 1px solid var(--spice-border-inactive);",
         "  transition: opacity 0.4s ease;",
+        "}",
+        // hidden command terminal
+        "#termspot-terminal {",
+        "  position: fixed; left: 50%; top: 10%; transform: translateX(-50%);",
+        "  width: min(680px, 92vw); z-index: 100000;",
+        "  background: rgba(var(--spice-rgb-main), 0.97);",
+        "  border: 1px solid var(--spice-border-active);",
+        "  box-shadow: 0 0 24px -6px var(--spice-border-active);",
+        '  font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important;',
+        "  font-size: 13px !important; color: var(--spice-text);",
+        "  display: none; flex-direction: column;",
+        "}",
+        "#termspot-terminal .t-out {",
+        "  padding: 12px 14px 4px; max-height: 50vh; overflow-y: auto;",
+        "  white-space: pre-wrap; line-height: 1.5 !important;",
+        "}",
+        "#termspot-terminal .t-dim { color: var(--spice-subtext); }",
+        "#termspot-terminal .t-acc { color: var(--spice-accent-active); text-shadow: 0 0 4px currentColor; }",
+        "#termspot-terminal .t-row {",
+        "  display: flex; gap: 8px; padding: 6px 14px 12px; align-items: center;",
+        "}",
+        "#termspot-terminal .t-prompt { color: var(--spice-accent-active); text-shadow: 0 0 4px currentColor; }",
+        "#termspot-terminal input {",
+        "  flex: 1; background: transparent; border: none; outline: none;",
+        "  color: var(--spice-text); font: inherit; caret-color: var(--spice-accent-active);",
         "}",
     ].join("\n");
     document.head.appendChild(style);
@@ -167,7 +245,6 @@
             lastKey = "";
             return;
         }
-        // keep the body class while enabled so the real cover never flashes
         document.body.classList.add("termspot-ascii-on");
 
         const host = document.querySelector(".main-nowPlayingView-coverArt");
@@ -195,8 +272,6 @@
     }
 
     /* ---- ascii progress bar ---------------------------------------------- */
-    const CELLS = 36;
-
     function renderProgress() {
         let el = document.getElementById("termspot-progress");
         if (!settings.asciiProgress) {
@@ -214,6 +289,8 @@
             el.id = "termspot-progress";
             host.appendChild(el);
         }
+        // fill the whole gap between the time displays
+        const cells = Math.max(24, Math.min(90, Math.floor((host.clientWidth || 300) / 7.9) - 2));
         let frac = 0;
         try {
             const dur = Spicetify.Player.getDuration();
@@ -221,8 +298,8 @@
         } catch (e) {
             frac = 0;
         }
-        const filled = Math.round(Math.max(0, Math.min(1, frac)) * CELLS);
-        el.textContent = "[" + "█".repeat(filled) + "░".repeat(CELLS - filled) + "]";
+        const filled = Math.round(Math.max(0, Math.min(1, frac)) * cells);
+        el.textContent = "[" + "█".repeat(filled) + "░".repeat(cells - filled) + "]";
     }
 
     /* ---- track load log ----------------------------------------------------- */
@@ -241,7 +318,7 @@
         const fname =
             meta.title.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 24) ||
             "track";
-        const durSec = ((item && item.duration && item.duration.milliseconds) || 194000) / 1000 | 0;
+        const durSec = (((item && item.duration && item.duration.milliseconds) || 194000) / 1000) | 0;
         const LINES = [
             "reading: " + fname + "_" + durSec + ".dat ........ OK",
             "artist metadata loaded",
@@ -262,6 +339,215 @@
         logTimers.push(setTimeout(() => (box.style.opacity = "0"), 2100));
         logTimers.push(setTimeout(() => box.remove(), 2600));
     }
+
+    /* ---- matrix rain ----------------------------------------------------------- */
+    function startMatrix() {
+        if (document.getElementById("termspot-matrix")) return;
+        const cv = document.createElement("canvas");
+        cv.id = "termspot-matrix";
+        cv.style.cssText =
+            "position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,0.88);cursor:pointer;";
+        document.body.appendChild(cv);
+        cv.width = window.innerWidth;
+        cv.height = window.innerHeight;
+        const ctx = cv.getContext("2d");
+        const CHARS = "アィウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF#$%*+";
+        const fs = 16;
+        const cols = Math.ceil(cv.width / fs);
+        const drops = Array.from({ length: cols }, () => (Math.random() * -60) | 0);
+        const accent =
+            getComputedStyle(document.documentElement).getPropertyValue("--spice-accent-active").trim() ||
+            "#58ff8f";
+        const timer = setInterval(() => {
+            ctx.fillStyle = "rgba(0,0,0,0.08)";
+            ctx.fillRect(0, 0, cv.width, cv.height);
+            ctx.fillStyle = accent;
+            ctx.font = fs + "px monospace";
+            for (let i = 0; i < cols; i++) {
+                const ch = CHARS[(Math.random() * CHARS.length) | 0];
+                ctx.fillText(ch, i * fs, drops[i] * fs);
+                drops[i] = drops[i] * fs > cv.height && Math.random() > 0.975 ? 0 : drops[i] + 1;
+            }
+        }, 50);
+        const stop = (e) => {
+            e && e.preventDefault();
+            clearInterval(timer);
+            cv.remove();
+            document.removeEventListener("keydown", stop, true);
+        };
+        cv.addEventListener("click", stop);
+        document.addEventListener("keydown", stop, true);
+    }
+
+    /* ---- hidden command terminal ------------------------------------------------ */
+    let termEl = null;
+    let termOut = null;
+    let termIn = null;
+
+    function tprint(text, cls) {
+        const line = document.createElement("div");
+        if (cls) line.className = cls;
+        line.textContent = text;
+        termOut.appendChild(line);
+        termOut.scrollTop = termOut.scrollHeight;
+    }
+
+    function toggleSetting(key, label) {
+        settings[key] = !settings[key];
+        saveSettings(settings);
+        applyCrtKnobs();
+        renderAscii();
+        renderProgress();
+        tprint(label + ": " + (settings[key] ? "on" : "off"), "t-acc");
+    }
+
+    function exec(raw) {
+        const parts = raw.trim().split(/\s+/);
+        const cmd = (parts[0] || "").toLowerCase();
+        const arg = parts.slice(1).join(" ");
+        if (!cmd) return;
+        tprint(":" + raw, "t-dim");
+
+        switch (cmd) {
+            case "help":
+                tprint(
+                    [
+                        "commands:",
+                        "  help          this list",
+                        "  clear         clear the screen",
+                        "  matrix        follow the white rabbit (click/key to exit)",
+                        "  theme <name>  live-preview a scheme (theme list | theme reset)",
+                        "  ascii         toggle ASCII album art",
+                        "  mono          toggle monochrome covers",
+                        "  progress      toggle ASCII progress bar",
+                        "  log           toggle track load log",
+                        "  scanlines     toggle CRT scanlines",
+                        "  vignette      toggle CRT vignette",
+                        "  about         about termspot",
+                        "  coffee        brew one",
+                        "  1994          go back",
+                        "  exit          close (or press Esc)",
+                    ].join("\n")
+                );
+                break;
+            case "clear":
+                termOut.textContent = "";
+                break;
+            case "exit":
+                closeTerminal();
+                break;
+            case "matrix":
+                closeTerminal();
+                startMatrix();
+                break;
+            case "theme":
+                if (!arg || arg === "list") {
+                    tprint("schemes: " + Object.keys(SCHEMES).join(", "));
+                    tprint("note: live preview only — permanent switch: spicetify config color_scheme <name>", "t-dim");
+                } else if (arg === "reset") {
+                    resetScheme();
+                    tprint("scheme reset to the applied one", "t-acc");
+                } else {
+                    const applied = applyScheme(arg);
+                    tprint(applied ? "scheme: " + applied + " (live preview)" : "unknown scheme: " + arg, applied ? "t-acc" : "t-dim");
+                }
+                break;
+            case "ascii":
+                toggleSetting("ascii", "ASCII album art");
+                break;
+            case "mono":
+                toggleSetting("mono", "monochrome covers");
+                break;
+            case "progress":
+                toggleSetting("asciiProgress", "ASCII progress bar");
+                break;
+            case "log":
+                toggleSetting("trackLog", "track load log");
+                break;
+            case "scanlines":
+                toggleSetting("scanlines", "scanlines");
+                break;
+            case "vignette":
+                toggleSetting("vignette", "vignette");
+                break;
+            case "about":
+                tprint("termspot — CRT phosphor terminal theme for Spotify", "t-acc");
+                tprint("by fdeox — github.com/fdeox/termspot\npairs with the Terminal Greeting extension");
+                break;
+            case "coffee":
+                tprint("   ( (\n    ) )\n  ........\n  |      |]\n  \\      /\n   `----'", "t-acc");
+                tprint("brew complete. back to the music.");
+                break;
+            case "1994":
+                applyScheme("FdeoxAmber");
+                settings.scanlines = true;
+                saveSettings(settings);
+                applyCrtKnobs();
+                tprint("dialing up... carrier detected. welcome to 1994.", "t-acc");
+                tprint("(`theme reset` brings you home)", "t-dim");
+                break;
+            default:
+                tprint("command not found: " + cmd + "  (try: help)", "t-dim");
+        }
+    }
+
+    function ensureTerminal() {
+        if (termEl) return;
+        termEl = document.createElement("div");
+        termEl.id = "termspot-terminal";
+        termOut = document.createElement("div");
+        termOut.className = "t-out";
+        const row = document.createElement("div");
+        row.className = "t-row";
+        const prompt = document.createElement("span");
+        prompt.className = "t-prompt";
+        prompt.textContent = "termspot:~ $";
+        termIn = document.createElement("input");
+        termIn.type = "text";
+        termIn.spellcheck = false;
+        termIn.addEventListener("keydown", (e) => {
+            e.stopPropagation();
+            if (e.key === "Enter") {
+                exec(termIn.value);
+                termIn.value = "";
+            } else if (e.key === "Escape") {
+                closeTerminal();
+            }
+        });
+        row.append(prompt, termIn);
+        termEl.append(termOut, row);
+        document.body.appendChild(termEl);
+    }
+
+    function openTerminal() {
+        ensureTerminal();
+        if (termEl.style.display !== "flex") {
+            termEl.style.display = "flex";
+            if (!termOut.childElementCount) {
+                tprint("termspot terminal — type `help` for commands, Esc to close", "t-dim");
+            }
+        }
+        setTimeout(() => termIn.focus(), 0);
+    }
+
+    function closeTerminal() {
+        if (termEl) termEl.style.display = "none";
+    }
+
+    document.addEventListener(
+        "keydown",
+        (e) => {
+            const t = e.target;
+            const typing =
+                t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+            if (!typing && e.key === ":") {
+                e.preventDefault();
+                e.stopPropagation();
+                openTerminal();
+            }
+        },
+        true
+    );
 
     /* ---- settings ui ------------------------------------------------------ */
     function openSettings() {
@@ -287,6 +573,10 @@
             return l;
         });
 
+        const hint = document.createElement("div");
+        hint.style.cssText = "color:var(--spice-subtext);font-size:12px;";
+        hint.textContent = 'psst: press ":" anywhere for the hidden terminal';
+
         const save = document.createElement("button");
         save.textContent = "Save";
         save.style.cssText =
@@ -305,7 +595,7 @@
             Spicetify.showNotification("termspot: settings saved");
         });
 
-        wrap.append(...boxes, save);
+        wrap.append(...boxes, hint, save);
         Spicetify.PopupModal.display({ title: "termspot", content: wrap });
     }
 
@@ -331,7 +621,6 @@
     applyCrtKnobs();
     tick();
     setInterval(safely(renderProgress), 500);
-    // the sidebar and playbar remount on navigation — react quickly but debounced
     let obsTimer = 0;
     new MutationObserver(() => {
         clearTimeout(obsTimer);
