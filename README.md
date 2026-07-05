@@ -11,7 +11,7 @@ Your Spotify, running on a machine from a better timeline.
 > extension: boot log, terminal prompt with time-of-day greeting, now-playing
 > ticker and night shift.
 
-![termspot](screenshots/scheme-Fdeox.jpg)
+![termspot](screenshots/scheme-Fdeox-v2.jpg)
 
 ## Color schemes
 
@@ -24,15 +24,15 @@ spicetify apply
 
 | | |
 |---|---|
-| **Fdeox** *(default)* — green phosphor ![Fdeox](screenshots/scheme-Fdeox.jpg) | **FdeoxAmber** — amber phosphor ![FdeoxAmber](screenshots/scheme-FdeoxAmber.jpg) |
-| **Synthwave** — neon night drive ![Synthwave](screenshots/scheme-Synthwave.jpg) | **Arctic** — cold storage ![Arctic](screenshots/scheme-Arctic.jpg) |
-| **Bloodmoon** — alarm mode ![Bloodmoon](screenshots/scheme-Bloodmoon.jpg) | **Ultraviolet** — blacklight ![Ultraviolet](screenshots/scheme-Ultraviolet.jpg) |
+| **Fdeox** *(default)* — green phosphor ![Fdeox](screenshots/scheme-Fdeox-v2.jpg) | **FdeoxAmber** — amber phosphor ![FdeoxAmber](screenshots/scheme-FdeoxAmber-v2.jpg) |
+| **Synthwave** — neon night drive ![Synthwave](screenshots/scheme-Synthwave-v2.jpg) | **Arctic** — cold storage ![Arctic](screenshots/scheme-Arctic-v2.jpg) |
+| **Bloodmoon** — alarm mode ![Bloodmoon](screenshots/scheme-Bloodmoon-v2.jpg) | **Ultraviolet** — blacklight ![Ultraviolet](screenshots/scheme-Ultraviolet-v2.jpg) |
 | **Matrix** — follow the white rabbit ![Matrix](screenshots/scheme-Matrix.jpg) | **Gold** — the executive mainframe ![Gold](screenshots/scheme-Gold.jpg) |
 | **Frostbyte** — nord-inspired ice ![Frostbyte](screenshots/scheme-Frostbyte.jpg) | **Nightbloom** — catppuccin-inspired pastel ![Nightbloom](screenshots/scheme-Nightbloom.jpg) |
-| **Fangs** — dracula-inspired ![Fangs](screenshots/scheme-Fangs.jpg) | **Paper** — e-ink daylight ![Paper](screenshots/scheme-Paper.jpg) |
-| **Gruvbox** ![Gruvbox](screenshots/scheme-Gruvbox.jpg) | **Bios** — press DEL to enter setup ![Bios](screenshots/scheme-Bios-v2.jpg) |
-| **GruvboxHard** ![GruvboxHard](screenshots/scheme-GruvboxHard.jpg) | **EverforestDarkHard** ![EverforestDarkHard](screenshots/scheme-EverforestDarkHard.jpg) |
-| **EverforestDarkMedium** ![EverforestDarkMedium](screenshots/scheme-EverforestDarkMedium.jpg) | **EverforestDarkSoft** ![EverforestDarkSoft](screenshots/scheme-EverforestDarkSoft.jpg) |
+| **Fangs** — dracula-inspired ![Fangs](screenshots/scheme-Fangs.jpg) | **Paper** — e-ink daylight ![Paper](screenshots/scheme-Paper-v2.jpg) |
+| **Gruvbox** ![Gruvbox](screenshots/scheme-Gruvbox-v2.jpg) | **Bios** — press DEL to enter setup ![Bios](screenshots/scheme-Bios-v2.jpg) |
+| **GruvboxHard** ![GruvboxHard](screenshots/scheme-GruvboxHard-v2.jpg) | **EverforestDarkHard** ![EverforestDarkHard](screenshots/scheme-EverforestDarkHard-v2.jpg) |
+| **EverforestDarkMedium** ![EverforestDarkMedium](screenshots/scheme-EverforestDarkMedium-v2.jpg) | **EverforestDarkSoft** ![EverforestDarkSoft](screenshots/scheme-EverforestDarkSoft-v2.jpg) |
 
 ## Signature features
 
