@@ -1,7 +1,7 @@
 [
   {
     "name": "termspot",
-    "description": "CRT phosphor terminal theme: scanlines, vignette, glow, tmux-style pane chips, statusline playbar, terminal control glyphs and 12 color schemes from green phosphor to synthwave.",
+    "description": "CRT phosphor terminal theme: scanlines, vignette, glow, tmux-style pane chips, statusline playbar, terminal control glyphs and 17 color schemes from green phosphor to synthwave.",
     "preview": "screenshots/scheme-Fdeox.jpg",
     "readme": "README.md",
     "usercss": "user.css",

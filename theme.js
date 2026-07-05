@@ -71,9 +71,9 @@
         Paper: ["1b7a4a","0f5c38","f2ede4","1b7a4a","1b7a4a","d8cfc0","8a8070","e4dccc","f2ede4","286983","b4637a","6f675c","3b3630"],
         Matrix: ["00e63a","00ff41","050805","00ff41","00e63a","0f2913","2e5c38","0c1a0e","050805","4aa3df","ff3333","5c9e6b","c8facc"],
         Gold: ["d4af37","ffd700","0d0b06","ffd700","d4af37","33290f","5c521f","211c0c","0d0b06","4aa3df","ff5555","bfab6f","f0e8c2"],
-        Nord: ["88c0d0","8fbcbb","2e3440","8fbcbb","8fbcbb","3b4252","4c566a","4c566a","2e3440","5e81ac","bf616a","d8dee9","eceff4"],
-        CatppuccinMocha: ["cba6f7","cba6f7","1e1e2e","cba6f7","cba6f7","313244","585b70","585b70","1e1e2e","89b4fa","f38ba8","a6adc8","cdd6f4"],
-        Dracula: ["50fa7b","50fa7b","282a36","50fa7b","50fa7b","44475a","44475a","44475a","282a36","8be9fd","ff5555","6272a4","f8f8f2"],
+        Frostbyte: ["88c0d0","8fbcbb","2e3440","8fbcbb","8fbcbb","3b4252","4c566a","4c566a","2e3440","5e81ac","bf616a","d8dee9","eceff4"],
+        Nightbloom: ["cba6f7","cba6f7","1e1e2e","cba6f7","cba6f7","313244","585b70","585b70","1e1e2e","89b4fa","f38ba8","a6adc8","cdd6f4"],
+        Fangs: ["50fa7b","50fa7b","282a36","50fa7b","50fa7b","44475a","44475a","44475a","282a36","8be9fd","ff5555","6272a4","f8f8f2"],
         Gruvbox: ["98971a","b8bb26","282828","b8bb26","b8bb26","3c3836","665c54","7c6f64","282828","458588","cc241d","bdae93","fbf1c7"],
         GruvboxHard: ["98971a","b8bb26","1d2021","b8bb26","b8bb26","3c3836","665c54","7c6f64","1d2021","458588","cc241d","bdae93","ebdbb2"],
         EverforestDarkHard: ["a7c080","a7c080","272e33","a7c080","a7c080","2e383c","414b50","3c4841","272e33","83c092","e67e80","859289","d3c6aa"],
@@ -144,8 +144,9 @@
         ".termspot-ascii-on .main-nowPlayingView-coverArt:hover #termspot-ascii { opacity: 0; }",
         // monochrome phosphor covers, hover restores the original colors
         // (hover must sit on the clickable container: overlays swallow img:hover)
+        // the filter itself follows the active accent — see updateMonoFilter()
         ".termspot-mono :is(" + COVERS + ") {",
-        "  filter: grayscale(1) sepia(1) hue-rotate(80deg) brightness(0.8);",
+        "  filter: var(--termspot-mono-filter, grayscale(1) sepia(1) hue-rotate(80deg) brightness(0.8));",
         "  transition: filter 0.25s ease;",
         "}",
         ".termspot-mono :is(" + COVERS + "):hover,",
@@ -202,6 +203,47 @@
         "}",
     ].join("\n");
     document.head.appendChild(style);
+
+    /* ---- scheme-aware mono filter --------------------------------------- */
+    // sepia lands around a 40deg amber hue; rotate from there to the accent's
+    // hue so Synthwave tints pink, Gold tints gold, Fdeox stays phosphor green
+    let lastAccent = "";
+    function updateMonoFilter() {
+        const accent = getComputedStyle(document.documentElement)
+            .getPropertyValue("--spice-accent-active")
+            .trim();
+        if (!accent || accent === lastAccent) return;
+        lastAccent = accent;
+        let r, g, b;
+        if (accent.startsWith("#")) {
+            const h = accent.slice(1);
+            const f = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+            r = parseInt(f.slice(0, 2), 16);
+            g = parseInt(f.slice(2, 4), 16);
+            b = parseInt(f.slice(4, 6), 16);
+        } else {
+            const m = accent.match(/\d+/g);
+            if (!m || m.length < 3) return;
+            r = +m[0]; g = +m[1]; b = +m[2];
+        }
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let hue = 0;
+        if (max !== min) {
+            const d = max - min;
+            if (max === r) hue = ((g - b) / d) % 6;
+            else if (max === g) hue = (b - r) / d + 2;
+            else hue = (r - g) / d + 4;
+            hue = Math.round(hue * 60);
+            if (hue < 0) hue += 360;
+        }
+        const sat = max === 0 ? 0 : (max - min) / max;
+        document.documentElement.style.setProperty(
+            "--termspot-mono-filter",
+            "grayscale(1) sepia(1) hue-rotate(" + (hue - 40) + "deg) saturate(" +
+                (0.6 + sat).toFixed(2) + ") brightness(0.8)"
+        );
+    }
 
     /* ---- ascii album art ------------------------------------------------ */
     const RAMP = " .'-:=+*#%@";
@@ -783,6 +825,7 @@
         }
     };
     const tick = safely(() => {
+        updateMonoFilter();
         renderAscii();
         renderProgress();
     });
@@ -824,6 +867,7 @@
     applyCrtKnobs();
     tick();
     setInterval(safely(renderProgress), 500);
+    setInterval(safely(updateMonoFilter), 1000);
     let obsTimer = 0;
     new MutationObserver(() => {
         clearTimeout(obsTimer);

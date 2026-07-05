@@ -27,7 +27,10 @@ spicetify apply
 | **Fdeox** *(default)* — green phosphor ![Fdeox](screenshots/scheme-Fdeox.jpg) | **FdeoxAmber** — amber phosphor ![FdeoxAmber](screenshots/scheme-FdeoxAmber.jpg) |
 | **Synthwave** — neon night drive ![Synthwave](screenshots/scheme-Synthwave.jpg) | **Arctic** — cold storage ![Arctic](screenshots/scheme-Arctic.jpg) |
 | **Bloodmoon** — alarm mode ![Bloodmoon](screenshots/scheme-Bloodmoon.jpg) | **Ultraviolet** — blacklight ![Ultraviolet](screenshots/scheme-Ultraviolet.jpg) |
-| **Paper** — e-ink daylight ![Paper](screenshots/scheme-Paper.jpg) | **Gruvbox** ![Gruvbox](screenshots/scheme-Gruvbox.jpg) |
+| **Matrix** — follow the white rabbit ![Matrix](screenshots/scheme-Matrix.jpg) | **Gold** — the executive mainframe ![Gold](screenshots/scheme-Gold.jpg) |
+| **Frostbyte** — nord-inspired ice ![Frostbyte](screenshots/scheme-Frostbyte.jpg) | **Nightbloom** — catppuccin-inspired pastel ![Nightbloom](screenshots/scheme-Nightbloom.jpg) |
+| **Fangs** — dracula-inspired ![Fangs](screenshots/scheme-Fangs.jpg) | **Paper** — e-ink daylight ![Paper](screenshots/scheme-Paper.jpg) |
+| **Gruvbox** ![Gruvbox](screenshots/scheme-Gruvbox.jpg) | |
 | **GruvboxHard** ![GruvboxHard](screenshots/scheme-GruvboxHard.jpg) | **EverforestDarkHard** ![EverforestDarkHard](screenshots/scheme-EverforestDarkHard.jpg) |
 | **EverforestDarkMedium** ![EverforestDarkMedium](screenshots/scheme-EverforestDarkMedium.jpg) | **EverforestDarkSoft** ![EverforestDarkSoft](screenshots/scheme-EverforestDarkSoft.jpg) |
 
