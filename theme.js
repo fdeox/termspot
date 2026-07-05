@@ -562,6 +562,7 @@
                         "  matrix        follow the white rabbit (click/key to exit)",
                         "  about / coffee / 1994",
                         "  clear / exit  (Esc also closes)",
+                        "  quit          shut Spotify down entirely",
                     ].join("\n")
                 );
                 break;
@@ -637,6 +638,18 @@
                 break;
             case "exit":
                 closeTerminal();
+                break;
+            case "quit":
+                tprint("stopping playback daemon...", "t-dim");
+                tprint("unmounting ~/music...", "t-dim");
+                tprint("spotifyOS halted. goodbye.", "t-acc");
+                setTimeout(() => {
+                    try {
+                        Spicetify.Platform.LifecycleAPI.shutdown();
+                    } catch (e) {
+                        tprint("could not shut down (LifecycleAPI missing)", "t-dim");
+                    }
+                }, 900);
                 break;
             case "matrix":
                 closeTerminal();
