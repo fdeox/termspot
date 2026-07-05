@@ -110,7 +110,8 @@
     // note: the now-playing sidebar cover is deliberately NOT in this list —
     // that spot belongs to the ASCII art
     const COVERS =
-        ".main-cardImage-image, .view-homeShortcutsGrid-imageContainer img," +
+        "img.main-image-image:not(.main-nowPlayingView-coverArt img)," +
+        " .main-cardImage-image, .view-homeShortcutsGrid-imageContainer img," +
         " .main-trackList-rowImage, .main-coverSlotCollapsed-container img," +
         " .main-nowPlayingWidget-coverArt img, .x-entityImage-image," +
         " .main-entityHeader-image";
@@ -141,6 +142,7 @@
         "  transition: filter 0.25s ease;",
         "}",
         ".termspot-mono :is(" + COVERS + "):hover,",
+        ".termspot-mono .termspot-reveal :is(" + COVERS + "),",
         ".termspot-mono :is(a, button, [role=\"button\"], .main-card-card, .main-trackList-trackListRow, .view-homeShortcutsGrid-imageContainer):hover :is(" + COVERS + ") {",
         "  filter: none;",
         "}",
@@ -340,8 +342,8 @@
                 }, 140 * (i + 1))
             );
         });
-        logTimers.push(setTimeout(() => (box.style.opacity = "0"), 2100));
-        logTimers.push(setTimeout(() => box.remove(), 2600));
+        logTimers.push(setTimeout(() => (box.style.opacity = "0"), 4500));
+        logTimers.push(setTimeout(() => box.remove(), 5000));
     }
 
     /* ---- matrix rain ----------------------------------------------------------- */
@@ -777,6 +779,40 @@
         renderAscii();
         renderProgress();
     });
+
+    // hover-to-reveal for mono covers: CSS :hover is unreliable here because
+    // overlay layers swallow it, so track the pointer and mark the hovered
+    // clickable container instead
+    let revealEl = null;
+    const REVEAL_ROOTS =
+        "a, button, [role='button'], [role='row'], [role='gridcell'], " +
+        ".main-card-card, [class*='listRow' i], [class*='interactive' i], [draggable='true']";
+    document.addEventListener(
+        "pointerover",
+        (e) => {
+            if (!settings.mono || !e.target || !e.target.closest) return;
+            let root = e.target.closest(REVEAL_ROOTS);
+            // climb until the container actually holds a cover image
+            while (root && !root.querySelector("img")) {
+                root = root.parentElement ? root.parentElement.closest(REVEAL_ROOTS) : null;
+            }
+            if (root === revealEl) return;
+            if (revealEl) revealEl.classList.remove("termspot-reveal");
+            revealEl = root;
+            if (revealEl) revealEl.classList.add("termspot-reveal");
+        },
+        true
+    );
+    document.addEventListener(
+        "pointerleave",
+        () => {
+            if (revealEl) {
+                revealEl.classList.remove("termspot-reveal");
+                revealEl = null;
+            }
+        },
+        true
+    );
 
     applyCrtKnobs();
     tick();
