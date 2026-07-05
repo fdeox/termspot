@@ -1,4 +1,5 @@
-// termspot theme.js — ASCII album art, VFD spectrum bars and live CRT settings.
+// termspot theme.js — ASCII album art, ASCII progress bar, track-load log,
+// monochrome phosphor covers and live CRT settings.
 // Everything is configurable from Profile menu → "termspot settings".
 (function termspot() {
     if (
@@ -19,7 +20,9 @@
     const STORAGE_KEY = "termspot:settings";
     const DEFAULTS = {
         ascii: true, // ASCII album art in the now playing view
-        spectrum: true, // VFD spectrum bars in the playbar
+        mono: true, // monochrome phosphor covers (hover restores color)
+        asciiProgress: true, // [████░░░░] progress bar
+        trackLog: true, // "reading: track_1947.dat" toast on song change
         scanlines: true,
         vignette: true,
         poweron: true,
@@ -48,9 +51,17 @@
             "--crt-poweron",
             settings.poweron ? "termspot-power-on 0.9s ease-out 1" : "none"
         );
+        document.body.classList.toggle("termspot-mono", settings.mono);
+        document.body.classList.toggle("termspot-aprog", settings.asciiProgress);
     }
 
     /* ---- shared css ---------------------------------------------------- */
+    const COVERS =
+        ".main-cardImage-image, .view-homeShortcutsGrid-imageContainer img," +
+        " .main-trackList-rowImage, .main-coverSlotCollapsed-container img," +
+        " .main-nowPlayingWidget-coverArt img, .x-entityImage-image," +
+        " .main-entityHeader-image, .main-nowPlayingView-coverArt img";
+
     const style = document.createElement("style");
     style.id = "termspot-js-style";
     style.textContent = [
@@ -66,17 +77,38 @@
         "  text-shadow: 0 0 4px currentColor; user-select: none;",
         "  overflow: hidden; pointer-events: none;",
         "}",
-        // spectrum bars
-        "#termspot-spectrum {",
-        "  display: flex; align-items: flex-end; gap: 2px;",
-        "  height: 20px; margin: 0 14px; align-self: center;",
+        // monochrome phosphor covers, hover restores the original colors
+        ".termspot-mono :is(" + COVERS + ") {",
+        "  filter: grayscale(1) sepia(1) hue-rotate(80deg) brightness(0.8);",
+        "  transition: filter 0.25s ease;",
         "}",
-        "#termspot-spectrum i {",
-        "  width: 3px; background: var(--spice-accent-active);",
-        "  box-shadow: 0 0 4px var(--spice-accent);",
-        "  animation: termspot-bar 0.9s ease-in-out infinite alternate;",
+        ".termspot-mono :is(" + COVERS + "):hover,",
+        ".termspot-mono .main-card-card:hover :is(" + COVERS + "),",
+        ".termspot-mono .main-trackList-trackListRow:hover :is(" + COVERS + ") {",
+        "  filter: none;",
         "}",
-        "@keyframes termspot-bar { from { height: 15%; } to { height: 100%; } }",
+        // ascii progress bar: hide the real bar's paint, keep its hit area
+        ".termspot-aprog .playback-bar [data-testid=\"progress-bar\"] { opacity: 0 !important; }",
+        "#termspot-progress {",
+        "  position: absolute; inset: 0; z-index: 5;",
+        "  display: flex; align-items: center; justify-content: center;",
+        '  font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important;',
+        "  font-size: 12px !important; line-height: 1 !important;",
+        "  color: var(--spice-accent-active); white-space: pre;",
+        "  text-shadow: 0 0 var(--crt-glow, 6px) currentColor;",
+        "  pointer-events: none; user-select: none;",
+        "}",
+        // track load log
+        "#termspot-tracklog {",
+        "  position: fixed; left: 18px; bottom: 118px; z-index: 9998;",
+        '  font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important;',
+        "  font-size: 12px !important; line-height: 1.5 !important;",
+        "  color: var(--spice-accent-active); white-space: pre;",
+        "  text-shadow: 0 0 4px currentColor; pointer-events: none; user-select: none;",
+        "  background: rgba(var(--spice-rgb-main), 0.85); padding: 8px 12px;",
+        "  border: 1px solid var(--spice-border-inactive);",
+        "  transition: opacity 0.4s ease;",
+        "}",
     ].join("\n");
     document.head.appendChild(style);
 
@@ -87,18 +119,22 @@
     let lastKey = "";
     let rendering = false;
 
-    function coverUrl() {
+    function currentItem() {
         try {
-            const item = Spicetify.Player.data && (Spicetify.Player.data.item || Spicetify.Player.data.track);
-            const meta = item && item.metadata;
-            const raw = meta && (meta.image_url || meta.image_xlarge_url);
-            if (!raw) return null;
-            return raw.startsWith("spotify:image:")
-                ? "https://i.scdn.co/image/" + raw.slice("spotify:image:".length)
-                : raw;
+            return Spicetify.Player.data && (Spicetify.Player.data.item || Spicetify.Player.data.track);
         } catch (e) {
             return null;
         }
+    }
+
+    function coverUrl() {
+        const item = currentItem();
+        const meta = item && item.metadata;
+        const raw = meta && (meta.image_url || meta.image_xlarge_url);
+        if (!raw) return null;
+        return raw.startsWith("spotify:image:")
+            ? "https://i.scdn.co/image/" + raw.slice("spotify:image:".length)
+            : raw;
     }
 
     async function toAscii(url) {
@@ -131,8 +167,7 @@
             lastKey = "";
             return;
         }
-        // keep the body class while enabled: when the sidebar remounts, the real
-        // cover stays hidden from first paint instead of flashing before the art
+        // keep the body class while enabled so the real cover never flashes
         document.body.classList.add("termspot-ascii-on");
 
         const host = document.querySelector(".main-nowPlayingView-coverArt");
@@ -159,39 +194,73 @@
         }
     }
 
-    /* ---- VFD spectrum bars ---------------------------------------------- */
-    const BAR_COUNT = 14;
+    /* ---- ascii progress bar ---------------------------------------------- */
+    const CELLS = 36;
 
-    function renderSpectrum() {
-        let box = document.getElementById("termspot-spectrum");
-        if (!settings.spectrum) {
-            if (box) box.remove();
+    function renderProgress() {
+        let el = document.getElementById("termspot-progress");
+        if (!settings.asciiProgress) {
+            if (el) el.remove();
             return;
         }
-        const anchor = document.querySelector(".main-nowPlayingBar-right");
-        if (!anchor) return;
-        if (!box || box.parentElement !== anchor) {
-            if (box) box.remove();
-            box = document.createElement("div");
-            box.id = "termspot-spectrum";
-            for (let i = 0; i < BAR_COUNT; i++) {
-                const bar = document.createElement("i");
-                bar.style.animationDuration = (0.45 + Math.random() * 0.75).toFixed(2) + "s";
-                bar.style.animationDelay = (-Math.random()).toFixed(2) + "s";
-                box.appendChild(bar);
-            }
-            anchor.prepend(box);
+        const bar = document.querySelector('.playback-bar [data-testid="progress-bar"]');
+        if (!bar) return;
+        const host = bar.parentElement;
+        if (!host) return;
+        if (!el || el.parentElement !== host) {
+            if (el) el.remove();
+            host.style.position = "relative";
+            el = document.createElement("div");
+            el.id = "termspot-progress";
+            host.appendChild(el);
         }
-        const playing = (() => {
-            try {
-                return Spicetify.Player.isPlaying();
-            } catch (e) {
-                return false;
-            }
-        })();
-        box.querySelectorAll("i").forEach((b) => {
-            b.style.animationPlayState = playing ? "running" : "paused";
+        let frac = 0;
+        try {
+            const dur = Spicetify.Player.getDuration();
+            frac = dur ? Spicetify.Player.getProgress() / dur : 0;
+        } catch (e) {
+            frac = 0;
+        }
+        const filled = Math.round(Math.max(0, Math.min(1, frac)) * CELLS);
+        el.textContent = "[" + "█".repeat(filled) + "░".repeat(CELLS - filled) + "]";
+    }
+
+    /* ---- track load log ----------------------------------------------------- */
+    let logTimers = [];
+
+    function showTrackLog() {
+        if (!settings.trackLog) return;
+        const item = currentItem();
+        const meta = item && item.metadata;
+        if (!meta || !meta.title) return;
+
+        logTimers.forEach(clearTimeout);
+        logTimers = [];
+        document.getElementById("termspot-tracklog")?.remove();
+
+        const fname =
+            meta.title.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 24) ||
+            "track";
+        const durSec = ((item && item.duration && item.duration.milliseconds) || 194000) / 1000 | 0;
+        const LINES = [
+            "reading: " + fname + "_" + durSec + ".dat ........ OK",
+            "artist metadata loaded",
+            "album artwork rendered",
+        ];
+
+        const box = document.createElement("div");
+        box.id = "termspot-tracklog";
+        document.body.appendChild(box);
+
+        LINES.forEach((line, i) => {
+            logTimers.push(
+                setTimeout(() => {
+                    box.appendChild(document.createTextNode(line + "\n"));
+                }, 140 * (i + 1))
+            );
         });
+        logTimers.push(setTimeout(() => (box.style.opacity = "0"), 2100));
+        logTimers.push(setTimeout(() => box.remove(), 2600));
     }
 
     /* ---- settings ui ------------------------------------------------------ */
@@ -201,7 +270,9 @@
 
         const boxes = [
             ["ascii", "ASCII album art in the now playing view"],
-            ["spectrum", "VFD spectrum bars in the playbar"],
+            ["mono", "Monochrome phosphor covers (hover = color)"],
+            ["asciiProgress", "ASCII progress bar [████░░░░]"],
+            ["trackLog", "Track load log on song change"],
             ["scanlines", "CRT scanlines"],
             ["vignette", "CRT vignette"],
             ["poweron", "Power-on warm-up animation"],
@@ -229,7 +300,7 @@
             saveSettings(settings);
             applyCrtKnobs();
             renderAscii();
-            renderSpectrum();
+            renderProgress();
             Spicetify.PopupModal.hide();
             Spicetify.showNotification("termspot: settings saved");
         });
@@ -254,11 +325,12 @@
     };
     const tick = safely(() => {
         renderAscii();
-        renderSpectrum();
+        renderProgress();
     });
 
     applyCrtKnobs();
     tick();
+    setInterval(safely(renderProgress), 500);
     // the sidebar and playbar remount on navigation — react quickly but debounced
     let obsTimer = 0;
     new MutationObserver(() => {
@@ -266,8 +338,10 @@
         obsTimer = setTimeout(tick, 250);
     }).observe(document.body, { childList: true, subtree: true });
     try {
-        Spicetify.Player.addEventListener("songchange", () => setTimeout(tick, 250));
-        Spicetify.Player.addEventListener("onplaypause", tick);
+        Spicetify.Player.addEventListener("songchange", () => {
+            setTimeout(tick, 250);
+            showTrackLog();
+        });
     } catch (e) {
         /* observer covers it */
     }
