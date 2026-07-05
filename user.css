@@ -376,7 +376,9 @@ textarea {
 }
 .main-globalNav-searchContainer form div:has(> .main-topBar-searchBar:focus)::before {
     content: "~/search";
-    color: var(--spice-border-active) !important;
+    /* chip text must stay dark on the accent chip — accent-on-accent was invisible */
+    color: var(--spice-main) !important;
+    background: var(--spice-accent-active);
 }
 .Root__nav-bar .main-yourLibraryX-entryPoints:has(.main-yourLibraryX-navItems)::before {
     content: "~/pages";
