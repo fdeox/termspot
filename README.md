@@ -31,15 +31,24 @@ spicetify apply
 | **GruvboxHard** ![GruvboxHard](screenshots/scheme-GruvboxHard.jpg) | **EverforestDarkHard** ![EverforestDarkHard](screenshots/scheme-EverforestDarkHard.jpg) |
 | **EverforestDarkMedium** ![EverforestDarkMedium](screenshots/scheme-EverforestDarkMedium.jpg) | **EverforestDarkSoft** ![EverforestDarkSoft](screenshots/scheme-EverforestDarkSoft.jpg) |
 
-## CRT knobs
+## Signature features
 
-At the top of `user.css`:
+- **Live ASCII album art** — the current track's cover is redrawn as character
+  art in your accent color, right in the now playing view.
+- **VFD deck** — playback times in a real seven-segment display font, plus
+  animated spectrum bars in the playbar that freeze when you pause.
+- **Power-on warm-up** — the screen flickers to life like a real CRT.
+
+## Settings
+
+Everything is toggleable in-app: **Profile menu → termspot settings**
+(ASCII art, spectrum bars, scanlines, vignette, power-on animation).
+
+Fine-tuning lives at the top of `user.css`:
 
 ```css
---crt-scanlines: block;  /* none to disable */
---crt-vignette: block;   /* none to disable */
---crt-glow: 6px;         /* 0px to disable  */
---crt-poweron: termspot-power-on 0.9s ease-out 1; /* none to disable */
+--crt-glow: 6px;         /* 0px disables the phosphor glow */
+--font-size: 14px;       /* try 12px + --line-height: 1.1 for a compact look */
 ```
 
 ## Install
