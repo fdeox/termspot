@@ -228,10 +228,10 @@ div:has(> .main-entityHeader-container) {
     display: var(--crt-scanlines);
     background: repeating-linear-gradient(
         0deg,
-        rgba(0, 0, 0, 0.18) 0px,
-        rgba(0, 0, 0, 0.18) 1px,
+        rgba(0, 0, 0, 0.07) 0px,
+        rgba(0, 0, 0, 0.07) 1px,
         transparent 1px,
-        transparent 3px
+        transparent 4px
     );
 }
 .Root__top-container::after {
@@ -243,8 +243,8 @@ div:has(> .main-entityHeader-container) {
     display: var(--crt-vignette);
     background: radial-gradient(
         ellipse at center,
-        transparent 62%,
-        rgba(0, 0, 0, 0.38) 100%
+        transparent 68%,
+        rgba(0, 0, 0, 0.22) 100%
     );
 }
 
@@ -314,14 +314,26 @@ textarea {
 .Root__main-view,
 .main-nowPlayingBar-container,
 .Root__right-sidebar:has(aside:not(:empty)) {
-    border: none;
+    border: var(--border-width) var(--border-style) var(--spice-border-inactive);
     border-radius: 0;
     background-color: var(--spice-main);
+    transition: border-color var(--border-transition), box-shadow var(--border-transition);
 }
-/* the playbar is a statusline: hard accent edge on top */
+/* the beloved edge glow — kept subtle */
+.Root__globalNav:hover,
+.main-yourLibraryX-entryPoints:hover,
+.Root__main-view:hover,
+.Root__right-sidebar:has(aside:not(:empty)):hover {
+    border-color: var(--spice-border-active);
+    box-shadow: 0 0 10px -4px var(--spice-border-active);
+}
+/* the playbar is a statusline: hard accent edge on top, glow only upward */
 .main-nowPlayingBar-container {
-    box-shadow: 0 -2px 0 0 var(--spice-accent),
-        0 0 calc(var(--crt-glow) * 2) -2px var(--spice-accent);
+    border-top: 2px solid var(--spice-accent);
+    box-shadow: 0 -6px 14px -10px var(--spice-accent);
+}
+.main-nowPlayingBar-container:hover {
+    box-shadow: 0 -6px 18px -8px var(--spice-accent-active);
 }
 .Root__nav-bar .main-yourLibraryX-entryPoints {
     overflow-x: visible !important;
@@ -639,8 +651,9 @@ img[src*="equaliser"] {
 .progress-bar,
 [data-testid="progress-bar"] {
     --fg-color: var(--spice-button-active);
-    --mg-color: var(--background-tinted-base);
-    --bg-color: var(--spice-button-disabled);
+    --mg-color: rgba(var(--spice-rgb-subtext), 0.35);
+    /* visible dim track — an invisible rail made the bar look broken */
+    --bg-color: rgba(var(--spice-rgb-subtext), 0.22);
 }
 .main-nowPlayingBar-container .playback-bar .progress-bar__slider,
 .main-nowPlayingBar-container .playback-bar [data-testid="progress-bar-handle"] {
@@ -680,7 +693,7 @@ img[src*="equaliser"] {
 }
 .player-controls__buttons,
 .main-nowPlayingBar-extraControls {
-    opacity: 0.35;
+    opacity: 0.6;
     transition: opacity var(--border-transition);
 }
 .player-controls__buttons:hover,
