@@ -88,23 +88,18 @@
     --background-tinted-highlight: rgba(var(--spice-rgb-highlight), 0.5);
     --background-tinted-press: rgba(var(--spice-rgb-highlight), 1);
 }
-/* primary buttons become outlined terminal buttons: accent frame + glow,
-   filling with accent only on hover */
+/* play buttons: round phosphor power-buttons, no frames */
 .encore-dark-theme .encore-bright-accent-set {
-    --background-base: transparent !important;
-    --background-highlight: var(--spice-accent) !important;
-    --background-press: var(--spice-accent) !important;
-    --background-elevated-base: transparent !important;
-    --background-elevated-highlight: var(--spice-accent) !important;
-    --background-elevated-press: var(--spice-accent) !important;
-    --text-base: var(--spice-accent-active) !important;
+    --background-base: var(--spice-button-active) !important;
+    --background-highlight: var(--spice-button-active) !important;
+    --background-press: var(--spice-button-active) !important;
+    --background-elevated-base: var(--spice-button-active) !important;
+    --background-elevated-highlight: var(--spice-button-active) !important;
+    --background-elevated-press: var(--spice-button-active) !important;
 }
 button[data-encore-id="buttonPrimary"] {
-    border: var(--border-width) var(--border-style) var(--spice-accent) !important;
-    box-shadow: 0 0 calc(var(--crt-glow) * 1.5) -2px var(--spice-accent);
-}
-button[data-encore-id="buttonPrimary"]:hover {
-    color: var(--spice-main) !important;
+    border: none !important;
+    filter: drop-shadow(0 0 var(--crt-glow) rgba(var(--spice-rgb-accent-active), 0.5));
 }
 .Root__top-container,
 .Root__nav-bar,
@@ -116,13 +111,23 @@ button[data-encore-id="buttonPrimary"]:hover {
 .main-topBar-background,
 .main-home-filterChipsSection,
 .main-home-filterChipsSection::after,
-.main-trackList-trackListHeader,
-.main-trackList-trackListHeaderStuck.main-trackList-trackListHeader,
 .main-entityHeader-container + div,
 .main-entityHeader-container + div > div {
     background-color: var(--spice-main) !important;
     background: var(--spice-main);
     transition: unset !important;
+}
+/* tracklist header: htop-style accent strip */
+.main-trackList-trackListHeader,
+.main-trackList-trackListHeaderStuck.main-trackList-trackListHeader {
+    background-color: rgba(var(--spice-rgb-accent), 0.12) !important;
+    background: rgba(var(--spice-rgb-accent), 0.12);
+    border-bottom: 1px solid rgba(var(--spice-rgb-accent), 0.4) !important;
+    transition: unset !important;
+}
+.main-trackList-trackListHeader [role="columnheader"],
+.main-trackList-trackListHeader [role="columnheader"] * {
+    color: var(--spice-accent-active) !important;
 }
 .main-topBar-overlay,
 .main-entityHeader-container > div,
@@ -299,29 +304,29 @@ textarea {
     text-shadow: 0 0 var(--crt-glow) currentColor;
 }
 
-/*  ── panes: borders + path labels ───────── */
+/*  ── flat panes on pure black, tmux-chip labels ── */
+.Root__top-container {
+    background: #000000;
+    --panel-gap: 10px !important;
+}
 .Root__globalNav,
 .main-yourLibraryX-entryPoints,
 .Root__main-view,
 .main-nowPlayingBar-container,
 .Root__right-sidebar:has(aside:not(:empty)) {
-    border: var(--border-width) var(--border-style);
-    border-color: var(--spice-border-inactive);
-    border-radius: var(--border-radius);
+    border: none;
+    border-radius: 0;
     background-color: var(--spice-main);
-    transition: border-color var(--border-transition), box-shadow var(--border-transition);
 }
-.Root__globalNav:hover,
-.main-yourLibraryX-entryPoints:hover,
-.Root__main-view:hover,
-.main-nowPlayingBar-container:hover,
-.Root__right-sidebar:has(aside:not(:empty)):hover {
-    border-color: var(--spice-border-active);
-    box-shadow: 0 0 calc(var(--crt-glow) * 2) -2px var(--spice-border-active);
+/* the playbar is a statusline: hard accent edge on top */
+.main-nowPlayingBar-container {
+    box-shadow: 0 -2px 0 0 var(--spice-accent),
+        0 0 calc(var(--crt-glow) * 2) -2px var(--spice-accent);
 }
 .Root__nav-bar .main-yourLibraryX-entryPoints {
     overflow-x: visible !important;
 }
+/* inverted segment chips, tmux style */
 .Root__globalNav::before,
 .main-globalNav-searchContainer form div:has(> .main-topBar-searchBar:focus)::before,
 .Root__nav-bar .main-yourLibraryX-entryPoints:has(.main-yourLibraryX-navItems)::before,
@@ -329,13 +334,16 @@ textarea {
 .Root__main-view::before,
 .main-nowPlayingBar-container::before,
 .Root__right-sidebar:has(aside:not(:empty))::before {
-    color: var(--spice-header);
+    color: var(--spice-main);
+    background: var(--spice-accent);
     position: absolute;
-    margin: -10px 4px;
-    background: var(--spice-main);
-    padding: 0 3px;
+    margin: -9px 10px;
+    padding: 0 8px;
     z-index: 3;
-    transition: color var(--border-transition);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    box-shadow: 0 0 var(--crt-glow) rgba(var(--spice-rgb-accent), 0.55);
+    transition: background-color var(--border-transition);
 }
 .Root__globalNav::before {
     content: "~/nav";
@@ -367,14 +375,50 @@ textarea {
 .Root__main-view:hover::before,
 .main-nowPlayingBar-container:hover::before,
 .Root__right-sidebar:has(aside:not(:empty)):hover::before {
-    color: var(--spice-border-active);
-    text-shadow: 0 0 var(--crt-glow) currentColor;
+    background: var(--spice-accent-active);
+}
+
+/*  ── global nav spacing ─────────────────── */
+.main-globalNav-historyButtonsContainer > div {
+    gap: 0;
+    -webkit-padding-start: 0;
+    padding-inline-start: 0;
+    -webkit-margin-start: 0;
+    margin-inline-start: 0;
+}
+.main-globalNav-historyButtonsContainer
+    > div:not([class*="custom"])
+    > div:nth-child(1),
+.Root__globalNav > div:nth-child(3) > div:nth-child(2),
+.main-topBar-topbarContentRight + div {
+    height: 0;
+    width: 0;
+}
+.Root__globalNav > div:nth-child(3) {
+    -webkit-margin-end: 0;
+    margin-inline-end: 0;
+}
+.main-globalNav-historyButtons {
+    gap: 0 !important;
+    padding-inline: 0 !important;
+}
+.main-globalNav-historyButtons > button {
+    padding-inline: var(--encore-spacing-tighter, 12px);
+}
+.main-globalNav-historyButtonsContainer svg[class*="icon"],
+.main-globalNav-searchContainer svg {
+    transform: scale(0.7);
 }
 
 /*  ── search bar ─────────────────────────── */
 .main-globalNav-searchSection,
 .main-globalNav-searchContainer {
     align-items: center;
+}
+.main-globalNav-searchSection {
+    position: unset;
+    top: unset;
+    left: unset;
 }
 .main-globalNav-searchContainer {
     max-width: unset;
@@ -460,17 +504,21 @@ dialog::backdrop {
 }
 
 /*  ── inputs ─────────────────────────────── */
-button,
-.x-toggle-indicatorWrapper,
-select {
-    border-radius: var(--border-radius) !important;
-}
 button:hover {
     transform: unset !important;
 }
 select {
     color: var(--spice-text) !important;
     border: 1px solid var(--essential-subdued) !important;
+}
+
+/*  ── shelf titles as comments ───────────── */
+.main-view-container h2[class*="encore-text-title"]::before {
+    content: "## ";
+    color: var(--spice-header);
+}
+.main-view-container h2[class*="encore-text-title"] {
+    color: var(--spice-accent-active) !important;
 }
 
 /*  ── tracklists ─────────────────────────── */
@@ -484,18 +532,17 @@ select {
 .main-trackList-trackListRow:hover {
     box-shadow: inset 2px 0 0 var(--spice-accent);
 }
-/* cards are little terminal windows */
+/* flat cards; hover paints a phosphor underline */
 .main-card-card {
-    border: var(--border-width) var(--border-style) var(--spice-border-inactive);
+    border: none;
     border-radius: 0 !important;
-    background-color: var(--spice-main) !important;
-    transition: border-color var(--border-transition), box-shadow var(--border-transition);
+    background-color: transparent !important;
+    transition: background-color var(--border-transition), box-shadow var(--border-transition);
 }
 .main-card-card:hover,
 .main-card-card[data-context-menu-open="true"] {
-    border-color: var(--spice-border-active);
-    box-shadow: 0 0 calc(var(--crt-glow) * 2) -2px var(--spice-border-active);
-    background-color: var(--spice-main) !important;
+    background-color: rgba(var(--spice-rgb-highlight), 0.6) !important;
+    box-shadow: inset 0 -2px 0 0 var(--spice-accent);
 }
 /* squared, bordered filter chips */
 [class*="chip" i] {
