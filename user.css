@@ -6,6 +6,8 @@
     ═══════════════════════════════════════ */
 
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+/* DSEG: seven-segment VFD/LCD display font (OFL) — used for playback times */
+@import url("https://cdn.jsdelivr.net/npm/dseg@0.46.0/css/dseg.css");
 
 /*  ── user knobs ─────────────────────────── */
 :root {
@@ -33,6 +35,9 @@
     --border-transition: 0.2s ease;
 
     --global-nav-margin-top: 50px; /* '0px' if window controls are disabled */
+
+    /* compact preset: for dense `ls`-style lists, try
+       --font-size: 12px;  --line-height: 1.1; */
 }
 
 /*  ── font ───────────────────────────────── */
@@ -304,6 +309,9 @@ textarea {
 }
 .playback-bar__progress-time-elapsed,
 .main-playbackBarRemainingTime-container {
+    /* VFD deck digits, Pioneer style */
+    font-family: "DSEG7 Classic", var(--font-family) !important;
+    font-size: 13px !important;
     color: var(--spice-accent-active);
     text-shadow: 0 0 var(--crt-glow) currentColor;
 }
