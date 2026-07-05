@@ -33,16 +33,27 @@ spicetify apply
 
 ## Signature features
 
+- **Hidden command terminal** — press `:` anywhere and a terminal drops down.
+  `play <song>`, `search`, `queue`, `vol 60`, `next`, `np`… full music control
+  without touching the mouse. Plus `theme <name>` for live scheme previews,
+  `matrix`, `coffee`, `1994` and more — start with `help`.
+  ![hidden terminal](screenshots/hidden-terminal.jpg)
 - **Live ASCII album art** — the current track's cover is redrawn as character
-  art in your accent color, right in the now playing view.
-- **VFD deck** — playback times in a real seven-segment display font, plus
-  animated spectrum bars in the playbar that freeze when you pause.
+  art in your accent color, right in the now playing view. Hover it to peek at
+  the original.
+- **Monochrome phosphor covers** — every cover on the page rendered in green
+  phosphor; hover any card or row and the original colors come back.
+- **ASCII progress bar** — `[████████░░░░░░]` spanning the whole playbar,
+  with playback times in a real seven-segment VFD display font.
+- **Track load log** — on every song change:
+  `reading: track_name_229.dat ........ OK`
 - **Power-on warm-up** — the screen flickers to life like a real CRT.
 
 ## Settings
 
 Everything is toggleable in-app: **Profile menu → termspot settings**
-(ASCII art, spectrum bars, scanlines, vignette, power-on animation).
+(ASCII art, monochrome covers, ASCII progress bar, track log, scanlines,
+vignette, power-on animation) — or straight from the `:` terminal.
 
 Fine-tuning lives at the top of `user.css`:
 
