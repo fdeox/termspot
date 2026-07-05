@@ -117,11 +117,15 @@ button[data-encore-id="buttonPrimary"] {
     background: var(--spice-main);
     transition: unset !important;
 }
-/* tracklist header: htop-style accent strip */
+/* tracklist header: htop-style accent strip
+   (opaque composite — a transparent bg lets rows bleed through when sticky) */
 .main-trackList-trackListHeader,
 .main-trackList-trackListHeaderStuck.main-trackList-trackListHeader {
-    background-color: rgba(var(--spice-rgb-accent), 0.12) !important;
-    background: rgba(var(--spice-rgb-accent), 0.12);
+    background: linear-gradient(
+            rgba(var(--spice-rgb-accent), 0.12),
+            rgba(var(--spice-rgb-accent), 0.12)
+        )
+        var(--spice-main) !important;
     border-bottom: 1px solid rgba(var(--spice-rgb-accent), 0.4) !important;
     transition: unset !important;
 }
