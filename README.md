@@ -41,6 +41,8 @@ spicetify apply
 - **Live ASCII album art** — the current track's cover is redrawn as character
   art in your accent color, right in the now playing view. Hover it to peek at
   the original.
+
+  ![ascii album art](screenshots/ascii-cover.jpg)
 - **Monochrome phosphor covers** — every cover on the page rendered in green
   phosphor; hover any card or row and the original colors come back.
 - **ASCII progress bar** — `[████████░░░░░░]` spanning the whole playbar,

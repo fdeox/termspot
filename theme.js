@@ -121,6 +121,8 @@
     style.textContent = [
         // ascii art: the hidden img keeps the cover box's size, the pre overlays it
         ".termspot-ascii-on .main-nowPlayingView-coverArt img { visibility: hidden !important; }",
+        // spotify's placeholder note icon peeks out from under the hidden img
+        ".termspot-ascii-on .main-nowPlayingView-coverArt .cover-art-icon { visibility: hidden !important; }",
         ".termspot-ascii-on .main-nowPlayingView-coverArt { position: relative; }",
         "#termspot-ascii {",
         "  position: absolute; inset: 0; z-index: 2;",
