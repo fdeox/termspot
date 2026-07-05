@@ -6,6 +6,7 @@
     "readme": "README.md",
     "usercss": "user.css",
     "schemes": "color.ini",
+    "include": ["theme.js"],
     "authors": [{ "name": "fdeox", "url": "https://github.com/fdeox" }],
     "tags": ["terminal", "tui", "crt", "phosphor", "retro"]
   }
