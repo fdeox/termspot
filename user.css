@@ -705,7 +705,7 @@ img[src*="equaliser"] {
     width: 32px !important;
 }
 .main-nowPlayingBar-left {
-    padding-inline-start: 0;
+    padding-inline-start: 16px;
 }
 .main-nowPlayingWidget-trackInfo {
     margin: 0;
