@@ -129,15 +129,19 @@
         "  color: var(--spice-accent-active); white-space: pre;",
         "  text-shadow: 0 0 4px currentColor; user-select: none;",
         "  overflow: hidden; pointer-events: none;",
+        "  transition: opacity 0.2s ease;",
         "}",
+        // hovering the ascii art reveals the original cover underneath
+        ".termspot-ascii-on .main-nowPlayingView-coverArt:hover img { visibility: visible !important; }",
+        ".termspot-ascii-on .main-nowPlayingView-coverArt:hover #termspot-ascii { opacity: 0; }",
         // monochrome phosphor covers, hover restores the original colors
+        // (hover must sit on the clickable container: overlays swallow img:hover)
         ".termspot-mono :is(" + COVERS + ") {",
         "  filter: grayscale(1) sepia(1) hue-rotate(80deg) brightness(0.8);",
         "  transition: filter 0.25s ease;",
         "}",
         ".termspot-mono :is(" + COVERS + "):hover,",
-        ".termspot-mono .main-card-card:hover :is(" + COVERS + "),",
-        ".termspot-mono .main-trackList-trackListRow:hover :is(" + COVERS + ") {",
+        ".termspot-mono :is(a, button, [role=\"button\"], .main-card-card, .main-trackList-trackListRow, .view-homeShortcutsGrid-imageContainer):hover :is(" + COVERS + ") {",
         "  filter: none;",
         "}",
         // ascii progress bar: hide the real bar's paint, keep its hit area
@@ -401,7 +405,88 @@
         tprint(label + ": " + (settings[key] ? "on" : "off"), "t-acc");
     }
 
-    function exec(raw) {
+    /* music control helpers */
+    let lastResults = [];
+
+    async function searchTracks(q) {
+        // 1) the client's own search query — works on all modern builds
+        try {
+            const r = await Spicetify.GraphQL.Request(
+                Spicetify.GraphQL.Definitions.searchModalResults,
+                {
+                    searchTerm: q,
+                    offset: 0,
+                    limit: 10,
+                    numberOfTopResults: 10,
+                    includeAudiobooks: false,
+                    includePreReleases: false,
+                    includeArtistHasConcertsField: false,
+                    includeLocalConcertsField: false,
+                    includeAuthors: false,
+                }
+            );
+            const raw = [];
+            (function walk(n) {
+                if (!n || typeof n !== "object") return;
+                if (n.__typename === "TrackResponseWrapper" && n.data && n.data.uri) {
+                    raw.push(n.data);
+                    return;
+                }
+                Object.values(n).forEach(walk);
+            })(r);
+            if (raw.length) {
+                return raw.slice(0, 5).map((d) => ({
+                    name: d.name,
+                    uri: d.uri,
+                    artists: ((d.artists && d.artists.items) || []).map((a) => ({
+                        name: (a.profile && a.profile.name) || "?",
+                    })),
+                    duration_ms: d.duration && d.duration.totalMilliseconds,
+                }));
+            }
+        } catch (e) {
+            /* fall through to the web api */
+        }
+        // 2) web api with the session token (older builds)
+        const url =
+            "https://api.spotify.com/v1/search?q=" + encodeURIComponent(q) + "&type=track&limit=5";
+        const token =
+            Spicetify.Platform && Spicetify.Platform.Session && Spicetify.Platform.Session.accessToken;
+        if (token) {
+            try {
+                const r = await fetch(url, { headers: { Authorization: "Bearer " + token } });
+                if (r.ok) {
+                    const j = await r.json();
+                    return (j.tracks && j.tracks.items) || [];
+                }
+            } catch (e) {
+                /* fall through to cosmos */
+            }
+        }
+        const r2 = await Spicetify.CosmosAsync.get(url);
+        if (r2 && r2.tracks) return r2.tracks.items || [];
+        throw new Error((r2 && r2.message) || "search backend unavailable");
+    }
+
+    const fmtTrack = (t) => {
+        let s = t.name + " — " + (t.artists || []).map((a) => a.name).join(", ");
+        if (t.duration_ms) {
+            s +=
+                " (" + Math.floor(t.duration_ms / 60000) + ":" +
+                String(Math.floor((t.duration_ms % 60000) / 1000)).padStart(2, "0") + ")";
+        }
+        return s;
+    };
+
+    async function pickTrack(arg) {
+        const n = parseInt(arg, 10);
+        if (!isNaN(n) && String(n) === arg.trim() && lastResults[n - 1]) return lastResults[n - 1];
+        const items = await searchTracks(arg);
+        if (items.length) lastResults = items;
+        return items[0] || null;
+    }
+
+    async function exec(raw) {
         const parts = raw.trim().split(/\s+/);
         const cmd = (parts[0] || "").toLowerCase();
         const arg = parts.slice(1).join(" ");
@@ -412,23 +497,89 @@
             case "help":
                 tprint(
                     [
-                        "commands:",
-                        "  help          this list",
-                        "  clear         clear the screen",
-                        "  matrix        follow the white rabbit (click/key to exit)",
+                        "music:",
+                        "  play <song>   search and play (play 2 = 2nd result, play = resume)",
+                        "  search <q>    list top 5 matches",
+                        "  queue <song>  add to the queue",
+                        "  pause / next / prev",
+                        "  vol <0-100>   set volume",
+                        "  np            now playing",
+                        "  shuffle       toggle shuffle",
+                        "terminal:",
                         "  theme <name>  live-preview a scheme (theme list | theme reset)",
-                        "  ascii         toggle ASCII album art",
-                        "  mono          toggle monochrome covers",
-                        "  progress      toggle ASCII progress bar",
-                        "  log           toggle track load log",
-                        "  scanlines     toggle CRT scanlines",
-                        "  vignette      toggle CRT vignette",
-                        "  about         about termspot",
-                        "  coffee        brew one",
-                        "  1994          go back",
-                        "  exit          close (or press Esc)",
+                        "  ascii / mono / progress / log / scanlines / vignette",
+                        "  matrix        follow the white rabbit (click/key to exit)",
+                        "  about / coffee / 1994",
+                        "  clear / exit  (Esc also closes)",
                     ].join("\n")
                 );
+                break;
+            case "play":
+                if (!arg) {
+                    try { Spicetify.Player.play(); tprint("resumed", "t-acc"); } catch (e) { tprint("could not resume", "t-dim"); }
+                    break;
+                }
+                try {
+                    const t = await pickTrack(arg);
+                    if (!t) { tprint("no match for: " + arg, "t-dim"); break; }
+                    Spicetify.Player.playUri(t.uri);
+                    tprint("playing: " + fmtTrack(t), "t-acc");
+                } catch (e) {
+                    tprint("play failed: " + (e.message || e), "t-dim");
+                }
+                break;
+            case "search":
+            case "find":
+                if (!arg) { tprint("usage: search <query>", "t-dim"); break; }
+                try {
+                    lastResults = await searchTracks(arg);
+                    if (!lastResults.length) { tprint("no results", "t-dim"); break; }
+                    lastResults.forEach((t, i) => tprint("  " + (i + 1) + ". " + fmtTrack(t)));
+                    tprint("play <n> plays a result", "t-dim");
+                } catch (e) {
+                    tprint("search failed: " + (e.message || e), "t-dim");
+                }
+                break;
+            case "queue":
+                if (!arg) { tprint("usage: queue <song>", "t-dim"); break; }
+                try {
+                    const t = await pickTrack(arg);
+                    if (!t) { tprint("no match for: " + arg, "t-dim"); break; }
+                    await Spicetify.addToQueue([{ uri: t.uri }]);
+                    tprint("queued: " + fmtTrack(t), "t-acc");
+                } catch (e) {
+                    tprint("queue failed: " + (e.message || e), "t-dim");
+                }
+                break;
+            case "pause":
+                try { Spicetify.Player.pause(); tprint("paused", "t-acc"); } catch (e) { tprint("could not pause", "t-dim"); }
+                break;
+            case "next":
+                try { Spicetify.Player.next(); tprint("skipped", "t-acc"); } catch (e) { tprint("could not skip", "t-dim"); }
+                break;
+            case "prev":
+                try { Spicetify.Player.back(); tprint("went back", "t-acc"); } catch (e) { tprint("could not go back", "t-dim"); }
+                break;
+            case "vol": {
+                const v = parseInt(arg, 10);
+                if (isNaN(v) || v < 0 || v > 100) { tprint("usage: vol <0-100>", "t-dim"); break; }
+                try { Spicetify.Player.setVolume(v / 100); tprint("volume: " + v + "%", "t-acc"); } catch (e) { tprint("could not set volume", "t-dim"); }
+                break;
+            }
+            case "np": {
+                const item = currentItem();
+                const meta = item && item.metadata;
+                if (!meta || !meta.title) { tprint("nothing playing", "t-dim"); break; }
+                tprint("now playing: " + meta.title + (meta.artist_name ? " — " + meta.artist_name : ""), "t-acc");
+                break;
+            }
+            case "shuffle":
+                try {
+                    Spicetify.Player.toggleShuffle();
+                    tprint("shuffle toggled", "t-acc");
+                } catch (e) {
+                    tprint("could not toggle shuffle", "t-dim");
+                }
                 break;
             case "clear":
                 termOut.textContent = "";
