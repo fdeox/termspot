@@ -6,7 +6,7 @@
     "readme": "README.md",
     "usercss": "user.css",
     "schemes": "color.ini",
-    "include": ["theme.js"],
+    "include": ["https://cdn.jsdelivr.net/gh/fdeox/termspot@main/theme.js"],
     "authors": [{ "name": "fdeox", "url": "https://github.com/fdeox" }],
     "tags": ["terminal", "tui", "crt", "phosphor", "retro"]
   }
