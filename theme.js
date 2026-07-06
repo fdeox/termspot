@@ -120,6 +120,7 @@
         EverforestDarkMedium: ["a7c080","a7c080","2d353b","a7c080","a7c080","343f44","475258","425047","2d353b","83c092","e67e80","859289","d3c6aa"],
         EverforestDarkSoft: ["a7c080","a7c080","333c43","a7c080","a7c080","3a464c","4d5960","48584E","333c43","83c092","e67e80","859289","d3c6aa"],
     };
+    SCHEMES.CatppuccinMocha = SCHEMES.Nightbloom; // alias, by popular demand (issue #1)
     const hexRgb = (h) =>
         [h.slice(0, 2), h.slice(2, 4), h.slice(4, 6)].map((x) => parseInt(x, 16)).join(",");
 
