@@ -23,6 +23,7 @@
         mono: true, // monochrome phosphor covers (hover restores color)
         asciiProgress: true, // [████░░░░] progress bar
         trackLog: true, // "reading: track.dat" toast on song change
+        compact: false, // denser type for ls-style lists
         scanlines: true,
         vignette: true,
         poweron: true,
@@ -53,7 +54,45 @@
         );
         document.body.classList.toggle("termspot-mono", settings.mono);
         document.body.classList.toggle("termspot-aprog", settings.asciiProgress);
+        if (settings.compact) {
+            root.setProperty("--font-size", "12px");
+            root.setProperty("--line-height", "1.15");
+        } else {
+            root.removeProperty("--font-size");
+            root.removeProperty("--line-height");
+        }
     }
+
+    /* ---- listening stats (per day, local only) ---- */
+    const STATS_KEY = "termspot:stats";
+    const todayKey = () => new Date().toISOString().slice(0, 10);
+    function loadStats() {
+        try {
+            const s = JSON.parse(window.localStorage.getItem(STATS_KEY) || "{}");
+            if (s.day === todayKey() && s.plays) return s;
+        } catch (e) {
+            /* fresh start */
+        }
+        return { day: todayKey(), sec: 0, plays: {} };
+    }
+    let stats = loadStats();
+    function saveStats() {
+        try {
+            window.localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+        } catch (e) {
+            /* storage unavailable */
+        }
+    }
+    setInterval(() => {
+        try {
+            if (!Spicetify.Player.isPlaying()) return;
+            if (stats.day !== todayKey()) stats = loadStats();
+            stats.sec += 5;
+            if (stats.sec % 15 === 0) saveStats();
+        } catch (e) {
+            /* player not ready */
+        }
+    }, 5000);
 
     /* ---- color schemes (for the `theme` command; session-only preview) ---- */
     const SPICE_KEYS = [
@@ -556,10 +595,13 @@
                         "  pause / next / prev",
                         "  vol <0-100>   set volume",
                         "  np            now playing",
+                        "  lyrics        current track's lyrics, >> marks the live line",
+                        "  stats         today's listening stats",
+                        "  cowsay [text] the cow announces the current track",
                         "  shuffle       toggle shuffle",
                         "terminal:",
                         "  theme <name>  live-preview a scheme (theme list | theme reset)",
-                        "  ascii / mono / progress / log / scanlines / vignette",
+                        "  ascii / mono / progress / log / scanlines / vignette / compact",
                         "  matrix        follow the white rabbit (click/key to exit)",
                         "  about / coffee / 1994",
                         "  clear / exit  (Esc also closes)",
@@ -633,6 +675,80 @@
                 } catch (e) {
                     tprint("could not toggle shuffle", "t-dim");
                 }
+                break;
+            case "lyrics": {
+                const item = currentItem();
+                const tid = item && item.uri && (item.uri.match(/track:([A-Za-z0-9]+)/) || [])[1];
+                if (!tid) {
+                    tprint("nothing playing", "t-dim");
+                    break;
+                }
+                try {
+                    const r = await Spicetify.CosmosAsync.get(
+                        "https://spclient.wg.spotify.com/color-lyrics/v2/track/" + tid +
+                            "?format=json&vocalRemoval=false&market=from_token"
+                    );
+                    const lines = r && r.lyrics && r.lyrics.lines;
+                    if (!lines || !lines.length) {
+                        tprint("no lyrics for this track", "t-dim");
+                        break;
+                    }
+                    const synced = lines.some((l) => +l.startTimeMs > 0);
+                    let prog = 0;
+                    try {
+                        prog = Spicetify.Player.getProgress();
+                    } catch (e) {
+                        /* unsynced view */
+                    }
+                    let liveIdx = -1;
+                    if (synced) {
+                        for (let i = 0; i < lines.length; i++) {
+                            if (+lines[i].startTimeMs <= prog) liveIdx = i;
+                        }
+                    }
+                    tprint("lyrics: " + ((item.metadata && item.metadata.title) || ""), "t-acc");
+                    lines.forEach((l, i) => {
+                        if (!l.words || !l.words.trim() || l.words === "♪") return;
+                        tprint((i === liveIdx ? ">> " : "   ") + l.words, i === liveIdx ? "t-acc" : undefined);
+                    });
+                } catch (e) {
+                    tprint("no lyrics for this track", "t-dim");
+                }
+                break;
+            }
+            case "stats": {
+                const hh = (stats.sec / 3600) | 0;
+                const mm = ((stats.sec % 3600) / 60) | 0;
+                tprint("today: " + (hh ? hh + "h " : "") + mm + "m of music", "t-acc");
+                const top = Object.entries(stats.plays).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                if (!top.length) {
+                    tprint("no plays logged yet today — go press play", "t-dim");
+                    break;
+                }
+                const max = top[0][1];
+                top.forEach(([title, count]) => {
+                    const bar = "█".repeat(Math.max(1, Math.round((count / max) * 12)));
+                    tprint("  " + bar.padEnd(13) + count + "x  " + title.slice(0, 42));
+                });
+                break;
+            }
+            case "cowsay": {
+                let text = arg;
+                if (!text) {
+                    const meta = currentItem() && currentItem().metadata;
+                    text = meta && meta.title ? meta.title + " — " + (meta.artist_name || "") : "moo";
+                }
+                text = text.slice(0, 44);
+                const border = "-".repeat(text.length + 2);
+                tprint(
+                    " " + border + "\n< " + text + " >\n " + border +
+                        "\n        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\\n                ||----w |\n                ||     ||",
+                    "t-acc"
+                );
+                break;
+            }
+            case "compact":
+                toggleSetting("compact", "compact mode");
                 break;
             case "clear":
                 termOut.textContent = "";
@@ -784,6 +900,7 @@
             ["mono", "Monochrome phosphor covers (hover = color)"],
             ["asciiProgress", "ASCII progress bar [████░░░░]"],
             ["trackLog", "Track load log on song change"],
+            ["compact", "Compact mode (denser, smaller type)"],
             ["scanlines", "CRT scanlines"],
             ["vignette", "CRT vignette"],
             ["poweron", "Power-on warm-up animation"],
@@ -891,6 +1008,16 @@
         Spicetify.Player.addEventListener("songchange", () => {
             setTimeout(tick, 250);
             showTrackLog();
+            try {
+                const meta = currentItem() && currentItem().metadata;
+                if (meta && meta.title) {
+                    if (stats.day !== todayKey()) stats = loadStats();
+                    stats.plays[meta.title] = (stats.plays[meta.title] || 0) + 1;
+                    saveStats();
+                }
+            } catch (e) {
+                /* stats are best-effort */
+            }
         });
     } catch (e) {
         /* observer covers it */
