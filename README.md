@@ -36,8 +36,9 @@ spicetify apply
 
 ## Signature features
 
-- **Hidden command terminal** — press `:` anywhere (vim style) and a terminal
-  drops down; press `Esc` (or type `exit`) to close it.
+- **Hidden command terminal** — press `:` anywhere (vim style), or pick
+  **Profile menu → termspot terminal**, and a terminal drops down; press `Esc`
+  (or type `exit`) to close it.
   `play <song>`, `search`, `queue`, `vol 60`, `next`, `np`… full music control
   without touching the mouse. Plus `theme <name>` for live scheme previews,
   `matrix`, `coffee`, `1994` and more — start with `help`.
@@ -69,6 +70,9 @@ Fine-tuning lives at the top of `user.css`:
 ```
 
 ## Install
+
+Works on Spotify 1.2 and 1.3 (last checked with Spotify 1.3.3 and Spicetify
+2.45.3).
 
 ```
 # copy (or symlink) this folder into your spicetify Themes folder as "termspot"

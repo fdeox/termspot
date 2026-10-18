@@ -3,6 +3,8 @@
     by fdeox — https://github.com/fdeox
     structure inspired by the "text" theme (darkthemer, spicetify-themes, MIT)
     pairs with the Terminal Greeting extension
+    Spotify 1.3+ has none of Spicetify's readable class names, so each
+    rule also names its part by what stays (ids, data-testid, roles).
     ═══════════════════════════════════════ */
 
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
@@ -48,7 +50,9 @@
     line-height: var(--line-height) !important;
 }
 .lyrics-lyrics-container *,
-.main-nowPlayingView-lyricsContent * {
+.main-nowPlayingView-lyricsContent *,
+[data-testid="lyrics-npv-section"] *,
+div[style*="--lyrics-color-active"] * {
     font-family: var(--font-family);
     font-size: var(--font-size-lyrics);
     font-weight: var(--font-weight);
@@ -110,14 +114,19 @@ button[data-encore-id="buttonPrimary"] {
 .Root__nav-bar,
 .main-yourLibraryX-libraryContainer,
 .main-globalNav-navLink,
-.main-topBar-searchBar {
+.main-topBar-searchBar,
+#Desktop_LeftSidebar_Id > nav,
+#global-nav-bar form[role="search"] input {
     background-color: var(--spice-main);
 }
 .main-topBar-background,
 .main-home-filterChipsSection,
 .main-home-filterChipsSection::after,
 .main-entityHeader-container + div,
-.main-entityHeader-container + div > div {
+.main-entityHeader-container + div > div,
+[data-testid="entity-header"] + div,
+[data-testid="entity-header"] + div > div,
+[data-testid="topbar"] [style*="background-color"] {
     background-color: var(--spice-main) !important;
     background: var(--spice-main);
     transition: unset !important;
@@ -125,7 +134,8 @@ button[data-encore-id="buttonPrimary"] {
 /* tracklist header: htop-style accent strip
    (opaque composite — a transparent bg lets rows bleed through when sticky) */
 .main-trackList-trackListHeader,
-.main-trackList-trackListHeaderStuck.main-trackList-trackListHeader {
+.main-trackList-trackListHeaderStuck.main-trackList-trackListHeader,
+main [role="grid"] > [role="presentation"]:has([role="columnheader"]) {
     background: linear-gradient(
             rgba(var(--spice-rgb-accent), 0.12),
             rgba(var(--spice-rgb-accent), 0.12)
@@ -135,7 +145,9 @@ button[data-encore-id="buttonPrimary"] {
     transition: unset !important;
 }
 .main-trackList-trackListHeader [role="columnheader"],
-.main-trackList-trackListHeader [role="columnheader"] * {
+.main-trackList-trackListHeader [role="columnheader"] *,
+main [role="grid"] [role="columnheader"],
+main [role="grid"] [role="columnheader"] * {
     color: var(--spice-accent-active) !important;
 }
 .main-topBar-overlay,
@@ -149,7 +161,11 @@ button[data-encore-id="buttonPrimary"] {
 .main-entityHeader-overlay,
 .main-actionBarBackground-background,
 .main-buddyFeed-container,
-.main-nowPlayingView-content.main-nowPlayingView-gradient {
+.main-nowPlayingView-content.main-nowPlayingView-gradient,
+[data-testid="entity-header"] > div:first-child,
+[data-testid="entity-header"] + div[style*="background-color"],
+[data-testid="entity-header"] + div > div[style*="background-color"],
+div:has(> section[data-testid="home-page"]) > div[style*="background-color"] {
     background-color: transparent !important;
     background-image: none !important;
     background: transparent !important;
@@ -173,17 +189,21 @@ button[data-encore-id="buttonPrimary"] {
     --panel-gap: 16px !important;
 }
 .Root__nav-bar,
-.main-nowPlayingBar-container {
+.main-nowPlayingBar-container,
+#Desktop_LeftSidebar_Id,
+#Desktop_LeftSidebar_Id > nav {
     overflow: visible;
 }
 .main-view-container {
     overflow: hidden;
 }
 section:has(> .main-entityHeader-container),
-div:has(> .main-entityHeader-container) {
+div:has(> .main-entityHeader-container),
+section:has(> [data-testid="entity-header"]) {
     margin-top: 0;
 }
-.main-entityHeader-container {
+.main-entityHeader-container,
+[data-testid="entity-header"] {
     height: unset !important;
     min-height: unset !important;
     padding: var(--content-spacing) 0;
@@ -197,7 +217,10 @@ div:has(> .main-entityHeader-container) {
 .main-avatar-image,
 .x-entityImage-xsmall,
 .main-coverSlotCollapsed-navAltContainer,
-.main-nowPlayingView-coverArt {
+.main-nowPlayingView-coverArt,
+[data-encore-id="card"] :is(img, div:has(> img)),
+#Desktop_LeftSidebar_Id :is(img, div:has(> img)),
+.termspot-npv-cover {
     border-radius: var(--border-radius) !important;
 }
 .main-cardImage-imageWrapper {
@@ -206,24 +229,32 @@ div:has(> .main-entityHeader-container) {
 
 /*  ── image toggles ──────────────────────── */
 .main-card-imageContainer img,
-.view-homeShortcutsGrid-imageContainer img {
+.view-homeShortcutsGrid-imageContainer img,
+[data-encore-id="card"] img,
+:has(> [data-testid="shortcut-background"]) img {
     display: var(--display-card-image) !important;
 }
-.main-coverSlotCollapsed-container {
+.main-coverSlotCollapsed-container,
+[data-testid="CoverSlotCollapsed__container"] {
     display: var(--display-coverart-image);
 }
 .main-entityHeader-imageContainer,
 .under-main-view,
 .main-entityHeader-creatorWrapper .main-avatar-avatar,
 .playlist-playlist-playlistImageContainer,
-.profile-userOverview-imageContainer {
+.profile-userOverview-imageContainer,
+[data-testid="playlist-image"],
+[data-testid="entity-header"] .contentSpacing > div:has(> [data-testid="playlist-image"]),
+[data-testid="entity-header"] .contentSpacing > button:has(img),
+[data-testid="entity-header"] .contentSpacing > div:last-child :is(figure, img) {
     display: var(--display-header-image);
 }
 .x-entityImage-imageContainer img,
 .main-avatar-image {
     display: var(--display-sidebar-image);
 }
-.main-trackList-rowImage {
+.main-trackList-rowImage,
+main [role="grid"] [role="row"]:not([aria-rowindex="1"]) [aria-colindex="2"] > img {
     display: var(--display-tracklist-image);
 }
 
@@ -293,13 +324,26 @@ textarea {
 
 /*  ── CRT: phosphor glow ─────────────────── */
 .main-entityHeader-title h1,
-.main-entityHeader-title span {
+.main-entityHeader-title span,
+[data-testid="entityTitle"] {
     color: var(--spice-banner);
     text-shadow: 0 0 var(--crt-glow) currentColor;
     text-transform: uppercase;
     letter-spacing: 0.06em;
 }
-.main-entityHeader-title h1::before {
+/* (Spotify 1.3: the name sits in a button inside the title) */
+[data-testid="entityTitle"] {
+    display: flex !important;
+    align-items: baseline;
+    gap: 1ch;
+}
+[data-testid="entityTitle"] * {
+    text-transform: inherit !important;
+    letter-spacing: inherit;
+    color: inherit;
+}
+.main-entityHeader-title h1::before,
+[data-testid="entityTitle"]::before {
     content: "> ";
     color: var(--spice-accent-active);
 }
@@ -308,7 +352,9 @@ textarea {
     filter: drop-shadow(0 0 calc(var(--crt-glow) / 2) var(--spice-accent-active));
 }
 .playback-bar__progress-time-elapsed,
-.main-playbackBarRemainingTime-container {
+.main-playbackBarRemainingTime-container,
+[data-testid="playback-position"],
+[data-testid="playback-duration"] {
     /* VFD deck digits, Pioneer style */
     font-family: "DSEG7 Classic", var(--font-family) !important;
     font-size: 13px !important;
@@ -325,7 +371,10 @@ textarea {
 .main-yourLibraryX-entryPoints,
 .Root__main-view,
 .main-nowPlayingBar-container,
-.Root__right-sidebar:has(aside:not(:empty)) {
+.Root__right-sidebar:has(aside:not(:empty)),
+#Desktop_LeftSidebar_Id > nav,
+#main-view,
+#Desktop_PanelContainer_Id {
     border: var(--border-width) var(--border-style) var(--spice-border-inactive);
     border-radius: 0;
     background-color: var(--spice-main);
@@ -335,7 +384,10 @@ textarea {
 .Root__globalNav:hover,
 .main-yourLibraryX-entryPoints:hover,
 .Root__main-view:hover,
-.Root__right-sidebar:has(aside:not(:empty)):hover {
+.Root__right-sidebar:has(aside:not(:empty)):hover,
+#Desktop_LeftSidebar_Id > nav:hover,
+#main-view:hover,
+#Desktop_PanelContainer_Id:hover {
     border-color: var(--spice-border-active);
     box-shadow: 0 0 10px -4px var(--spice-border-active);
 }
@@ -350,6 +402,15 @@ textarea {
 .Root__nav-bar .main-yourLibraryX-entryPoints {
     overflow-x: visible !important;
 }
+/* the chips sit on the pane's edge (and aren't cut off by it) */
+#Desktop_LeftSidebar_Id > nav,
+#Desktop_PanelContainer_Id {
+    position: relative;
+}
+#Desktop_PanelContainer_Id,
+div:has(> div > #Desktop_PanelContainer_Id) {
+    overflow: visible !important;
+}
 /* inverted segment chips, tmux style */
 .Root__globalNav::before,
 .main-globalNav-searchContainer form div:has(> .main-topBar-searchBar:focus)::before,
@@ -357,10 +418,18 @@ textarea {
 .Root__nav-bar .main-yourLibraryX-entryPoints:has(.main-yourLibraryX-libraryContainer)::before,
 .Root__main-view::before,
 .main-nowPlayingBar-container::before,
-.Root__right-sidebar:has(aside:not(:empty))::before {
+.Root__right-sidebar:has(aside:not(:empty))::before,
+#global-nav-bar form[role="search"] div:has(> input:focus)::before,
+#Desktop_LeftSidebar_Id > nav::before,
+#main-view::before,
+#Desktop_PanelContainer_Id::before {
     color: var(--spice-main);
     background: var(--spice-accent);
     position: absolute;
+    /* (Spotify 1.3 stretches its own ::before over the panel: not ours) */
+    inset: auto;
+    width: auto;
+    height: auto;
     margin: -9px 10px;
     padding: 0 8px;
     z-index: 3;
@@ -374,7 +443,8 @@ textarea {
     top: 0;
     left: 0;
 }
-.main-globalNav-searchContainer form div:has(> .main-topBar-searchBar:focus)::before {
+.main-globalNav-searchContainer form div:has(> .main-topBar-searchBar:focus)::before,
+#global-nav-bar form[role="search"] div:has(> input:focus)::before {
     content: "~/search";
     /* chip text must stay dark on the accent chip — accent-on-accent was invisible */
     color: var(--spice-main) !important;
@@ -383,24 +453,35 @@ textarea {
 .Root__nav-bar .main-yourLibraryX-entryPoints:has(.main-yourLibraryX-navItems)::before {
     content: "~/pages";
 }
-.Root__nav-bar .main-yourLibraryX-entryPoints:has(.main-yourLibraryX-libraryContainer)::before {
+.Root__nav-bar .main-yourLibraryX-entryPoints:has(.main-yourLibraryX-libraryContainer)::before,
+#Desktop_LeftSidebar_Id > nav::before {
     content: "~/library";
 }
-.Root__main-view::before {
+/* the library folded to its icons: a chip that fits */
+#Desktop_LeftSidebar_Id > nav:has(.main-yourLibraryX-headerIsCollapsed)::before {
+    content: "~/lib";
+    margin: -9px 4px;
+}
+.Root__main-view::before,
+#main-view::before {
     content: "~/main";
     position: fixed;
 }
 .main-nowPlayingBar-container::before {
     content: "~/playing";
 }
-.Root__right-sidebar:has(aside:not(:empty))::before {
+.Root__right-sidebar:has(aside:not(:empty))::before,
+#Desktop_PanelContainer_Id::before {
     content: "~/sidebar";
 }
 .Root__globalNav:hover::before,
 .Root__nav-bar .main-yourLibraryX-entryPoints:hover::before,
 .Root__main-view:hover::before,
 .main-nowPlayingBar-container:hover::before,
-.Root__right-sidebar:has(aside:not(:empty)):hover::before {
+.Root__right-sidebar:has(aside:not(:empty)):hover::before,
+#Desktop_LeftSidebar_Id > nav:hover::before,
+#main-view:hover::before,
+#Desktop_PanelContainer_Id:hover::before {
     background: var(--spice-accent-active);
 }
 
@@ -451,18 +532,21 @@ textarea {
     width: 100%;
 }
 .x-searchInput-searchInputInput,
-.main-globalNav-searchContainer form .main-topBar-searchBar {
+.main-globalNav-searchContainer form .main-topBar-searchBar,
+#global-nav-bar form[role="search"] input {
     border-radius: var(--border-radius);
     border: 1px solid;
     border-color: var(--spice-main);
 }
-.main-globalNav-searchContainer form .main-topBar-searchBar:focus {
+.main-globalNav-searchContainer form .main-topBar-searchBar:focus,
+#global-nav-bar form[role="search"] input:focus {
     box-shadow: none;
     border: var(--border-width) var(--border-style);
     border-color: var(--spice-border-active);
     outline: 14px solid var(--spice-main);
 }
-.main-globalNav-searchContainer form :is(#recent-searches-dropdown, #search-dropdown) > div {
+.main-globalNav-searchContainer form :is(#recent-searches-dropdown, #search-dropdown) > div,
+#global-nav-bar form[role="search"] :is(#recent-searches-dropdown, #search-dropdown) > div {
     border-radius: var(--border-radius);
     box-shadow: none;
     margin: 24.5px 0;
@@ -489,6 +573,7 @@ textarea {
 
 /*  ── menus + modals ─────────────────────── */
 .main-contextMenu-menu,
+[role="menu"],
 .tippy-box,
 #context-menu > ul,
 #context-menu > form,
@@ -497,11 +582,14 @@ textarea {
     border-radius: var(--border-radius) !important;
     box-shadow: 0 0 calc(var(--crt-glow) * 2) -2px var(--spice-border-active);
 }
-.main-contextMenu-menuItemButton {
+.main-contextMenu-menuItemButton,
+[role="menu"] :is([role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]) {
     color: var(--spice-text);
 }
 .main-contextMenu-menuItemButton:hover,
-.main-contextMenu-menuItemButton:not([aria-checked="true"]):focus {
+.main-contextMenu-menuItemButton:not([aria-checked="true"]):focus,
+[role="menu"] :is([role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]):hover,
+[role="menu"] :is([role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]):not([aria-checked="true"]):focus {
     background-color: rgba(var(--spice-rgb-highlight), 0.5) !important;
 }
 .GenericModal,
@@ -550,39 +638,50 @@ select {
 /*  ── tracklists ─────────────────────────── */
 .main-trackList-trackListRow:focus-within,
 .main-trackList-trackListRow:hover,
+main [role="grid"] [role="row"]:not([aria-rowindex="1"]):focus-within,
+main [role="grid"] [role="row"]:not([aria-rowindex="1"]):hover,
 [class*="listRow-isInteractive"]:hover,
 [class*="listRow-isInteractive"]:hover::after {
     background-color: rgba(var(--spice-rgb-highlight), 0.5) !important;
 }
 /* cursor-line: hovered row gets a terminal cursor bar on the left */
-.main-trackList-trackListRow:hover {
+.main-trackList-trackListRow:hover,
+main [role="grid"] [role="row"]:not([aria-rowindex="1"]):hover {
     box-shadow: inset 2px 0 0 var(--spice-accent);
 }
 /* flat cards; hover paints a phosphor underline */
-.main-card-card {
+.main-card-card,
+[data-encore-id="card"] {
     border: none;
     border-radius: 0 !important;
     background-color: transparent !important;
     transition: background-color var(--border-transition), box-shadow var(--border-transition);
 }
 .main-card-card:hover,
-.main-card-card[data-context-menu-open="true"] {
+.main-card-card[data-context-menu-open="true"],
+[data-encore-id="card"]:hover,
+[data-encore-id="card"][data-context-menu-open="true"] {
     background-color: rgba(var(--spice-rgb-highlight), 0.6) !important;
     box-shadow: inset 0 -2px 0 0 var(--spice-accent);
 }
 /* squared, bordered filter chips */
-[class*="chip" i] {
+[class*="chip" i],
+[data-encore-id="chip"] {
     border-radius: 0 !important;
     border: 1px solid var(--spice-border-inactive);
 }
 .main-trackList-trackListRow.main-trackList-selected,
-.main-trackList-trackListRow.main-trackList-selected:hover {
+.main-trackList-trackListRow.main-trackList-selected:hover,
+main [role="grid"] [role="row"]:not([aria-rowindex="1"])[aria-selected="true"],
+main [role="grid"] [role="row"]:not([aria-rowindex="1"])[aria-selected="true"]:hover {
     background-color: var(--spice-highlight) !important;
 }
 /* playing track: native indicator + phosphor glow
    (cross-context marking comes from the Terminal Greeting extension) */
 .main-trackList-trackListRow:has(.main-trackList-playingIcon) .main-trackList-rowTitle,
-.main-trackList-trackListRow:has(img[src*="equaliser"]) .main-trackList-rowTitle {
+.main-trackList-trackListRow:has(img[src*="equaliser"]) .main-trackList-rowTitle,
+main [role="grid"] [role="row"]:not([aria-rowindex="1"]):has(img[src*="equaliser"]) [aria-colindex="2"] [dir="auto"],
+main [role="grid"] [role="row"]:not([aria-rowindex="1"]) [aria-colindex="2"] [dir="auto"][class*="bright-accent"] {
     color: var(--spice-accent-active) !important;
     text-shadow: 0 0 var(--crt-glow) currentColor;
 }
@@ -616,20 +715,39 @@ img[src*="equaliser"] {
 .lyrics-lyrics-background {
     background-color: var(--spice-main);
 }
+/* Spotify 1.3+: the lyrics page is known only by its color variables; its
+   lines' past/active/future marks come from theme.js */
+main div[style*="--lyrics-color-active"] {
+    --lyrics-color-background: var(--spice-main) !important;
+    background-color: var(--spice-main) !important;
+}
 .lyrics-lyrics-contentContainer {
     justify-content: start;
 }
 .lyrics-lyrics-container,
-.main-nowPlayingView-section {
+.main-nowPlayingView-section,
+[data-testid="lyrics-npv-section"],
+main div[style*="--lyrics-color-active"] {
     --lyrics-color-active: var(--spice-text) !important;
     --lyrics-color-inactive: var(--spice-subtext) !important;
     --lyrics-color-passed: var(--spice-subtext) !important;
     --lyrics-color-messaging: var(--spice-subtext) !important;
 }
-.lyrics-lyricsContent-lyric {
+.lyrics-lyricsContent-lyric,
+main div[style*="--lyrics-color-active"] div[dir="auto"] {
     opacity: 0.3;
     display: flex;
     flex-direction: row;
+}
+main div[style*="--lyrics-color-active"] div[dir="auto"][data-termspot-past] {
+    opacity: 0.7;
+    transition: none;
+}
+main div[style*="--lyrics-color-active"] div[dir="auto"][data-termspot-active] {
+    color: var(--spice-text);
+    opacity: 1;
+    transition: none;
+    text-shadow: 0 0 var(--crt-glow) currentColor;
 }
 .lyrics-lyricsContent-lyric.lyrics-lyricsContent-highlight {
     opacity: 0.7;
@@ -641,15 +759,24 @@ img[src*="equaliser"] {
     transition: none;
     text-shadow: 0 0 var(--crt-glow) currentColor;
 }
-.lyrics-lyricsContent-lyric:not(:empty)::before {
+.lyrics-lyricsContent-lyric:not(:empty)::before,
+main div[style*="--lyrics-color-active"] div[dir="auto"]:not(:empty)::before {
     content: ">> ";
     opacity: 0;
     white-space: break-spaces;
 }
-.lyrics-lyricsContent-lyric.lyrics-lyricsContent-active:not(:empty)::before {
+.lyrics-lyricsContent-lyric.lyrics-lyricsContent-active:not(:empty)::before,
+main div[style*="--lyrics-color-active"] div[dir="auto"][data-termspot-active]:not(:empty)::before {
     content: ">> ";
     opacity: 1;
     white-space: break-spaces;
+}
+
+/* the lyrics preview in the right panel: a pane of its own, not Spotify's color */
+[data-testid="lyrics-npv-section"] {
+    background-color: var(--spice-main) !important;
+    border: var(--border-width) var(--border-style) var(--spice-border-inactive);
+    border-radius: var(--border-radius) !important;
 }
 
 /*  ── playback bar ───────────────────────── */

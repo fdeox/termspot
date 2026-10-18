@@ -155,21 +155,33 @@
     /* ---- shared css ---------------------------------------------------- */
     // note: the now-playing sidebar cover is deliberately NOT in this list —
     // that spot belongs to the ASCII art
+    // Covers by Spicetify's readable class names, and by Spotify's own
+    // data-testid marks and image sources (its image servers, and the
+    // spotify:image: links the library uses): newer Spotify versions ship only
+    // generated class names, which Spicetify can't always name for us.
     const COVERS =
-        "img.main-image-image:not(.main-nowPlayingView-coverArt img)," +
-        " .main-cardImage-image, .view-homeShortcutsGrid-imageContainer img," +
+        "img.main-image-image, .main-cardImage-image, .view-homeShortcutsGrid-imageContainer img," +
         " .main-trackList-rowImage, .main-coverSlotCollapsed-container img," +
-        " .main-nowPlayingWidget-coverArt img, .x-entityImage-image," +
-        " .main-entityHeader-image";
+        " .main-nowPlayingWidget-coverArt img, .x-entityImage-image, .main-entityHeader-image," +
+        ' img[data-testid="card-image"], img[data-testid="shortcut-image"], img[data-testid="entity-image"],' +
+        ' [data-testid="playlist-image"] img, [data-testid="tracklist-row"] img,' +
+        ' [data-testid="now-playing-widget"] img, [data-testid="CoverSlotCollapsed__container"] img,' +
+        ' :is(main, #Desktop_LeftSidebar_Id, #Desktop_PanelContainer_Id) :is(img[src*="i.scdn.co/image"], img[src*="mosaic.scdn.co"], img[src*="spotifycdn.com"], img[src^="spotify:image:"])';
+    // the now playing view's cover belongs to the ascii art: never mono (on
+    // newer Spotify it's the picture in the right panel's link to what's playing)
+    const NOT_MONO =
+        '.main-nowPlayingView-coverArt img, .termspot-npv-cover img,' +
+        ' aside:not([data-testid="now-playing-bar"]) a[data-testid="context-link"] img';
 
     const style = document.createElement("style");
     style.id = "termspot-js-style";
     style.textContent = [
         // ascii art: the hidden img keeps the cover box's size, the pre overlays it
-        ".termspot-ascii-on .main-nowPlayingView-coverArt img { visibility: hidden !important; }",
+        ".termspot-ascii-on :is(.main-nowPlayingView-coverArt, .termspot-npv-cover) img { visibility: hidden !important; }",
         // spotify's placeholder note icon peeks out from under the hidden img
-        ".termspot-ascii-on .main-nowPlayingView-coverArt .cover-art-icon { visibility: hidden !important; }",
-        ".termspot-ascii-on .main-nowPlayingView-coverArt { position: relative; }",
+        // (newer Spotify: the note icon of its placeholder, beside the img)
+        ".termspot-ascii-on :is(.main-nowPlayingView-coverArt, .termspot-npv-cover) :is(.cover-art-icon, svg) { visibility: hidden !important; }",
+        ".termspot-ascii-on :is(.main-nowPlayingView-coverArt, .termspot-npv-cover) { position: relative; }",
         "#termspot-ascii {",
         "  position: absolute; inset: 0; z-index: 2;",
         "  display: flex; align-items: center; justify-content: center;",
@@ -181,19 +193,20 @@
         "  transition: opacity 0.2s ease;",
         "}",
         // hovering the ascii art reveals the original cover underneath
-        ".termspot-ascii-on .main-nowPlayingView-coverArt:hover img { visibility: visible !important; }",
-        ".termspot-ascii-on .main-nowPlayingView-coverArt:hover #termspot-ascii { opacity: 0; }",
+        ".termspot-ascii-on :is(.main-nowPlayingView-coverArt, .termspot-npv-cover):hover img { visibility: visible !important; }",
+        ".termspot-ascii-on :is(.main-nowPlayingView-coverArt, .termspot-npv-cover):hover #termspot-ascii { opacity: 0; }",
         // monochrome phosphor covers, hover restores the original colors
         // (hover must sit on the clickable container: overlays swallow img:hover)
         // the filter itself follows the active accent — see updateMonoFilter()
-        ".termspot-mono :is(" + COVERS + ") {",
+        ".termspot-mono :is(" + COVERS + "):not(" + NOT_MONO + ") {",
         "  filter: var(--termspot-mono-filter, grayscale(1) sepia(1) hue-rotate(80deg) brightness(0.8));",
         "  transition: filter 0.25s ease;",
         "}",
         ".termspot-mono :is(" + COVERS + "):hover,",
         ".termspot-mono .termspot-reveal :is(" + COVERS + "),",
-        ".termspot-mono :is(a, button, [role=\"button\"], .main-card-card, .main-trackList-trackListRow, .view-homeShortcutsGrid-imageContainer):hover :is(" + COVERS + ") {",
-        "  filter: none;",
+        ".termspot-mono :is(a, button, [role=\"button\"], [role=\"row\"], [data-encore-id=\"card\"], [data-testid=\"tracklist-row\"], :has(> [data-testid=\"shortcut-background\"]), .main-card-card, .main-trackList-trackListRow, .view-homeShortcutsGrid-imageContainer):hover :is(" + COVERS + ") {",
+        // (important: the mono rule above names ids, which would outrank it)
+        "  filter: none !important;",
         "}",
         // ascii progress bar: hide the real bar's paint, keep its hit area
         '.termspot-aprog .playback-bar [data-testid="progress-bar"] { opacity: 0 !important; }',
@@ -332,6 +345,18 @@
         return out;
     }
 
+    // the now playing view's cover: by Spicetify's name for it, or (newer
+    // Spotify, without those names) as the picture in the right panel's link
+    // to what's playing; marked so the rules above find it
+    function npvCover() {
+        const named = document.querySelector(".main-nowPlayingView-coverArt");
+        if (named) return named;
+        const img = document.querySelector('aside:not([data-testid="now-playing-bar"]) a[data-testid="context-link"] img');
+        const host = img && img.parentElement;
+        if (host) host.classList.add("termspot-npv-cover");
+        return host || null;
+    }
+
     async function renderAscii() {
         if (rendering) return;
         const pre = document.getElementById("termspot-ascii");
@@ -343,7 +368,7 @@
         }
         document.body.classList.add("termspot-ascii-on");
 
-        const host = document.querySelector(".main-nowPlayingView-coverArt");
+        const host = npvCover();
         const url = coverUrl();
         if (!host || !url) return;
         if (pre && url === lastKey && host.contains(pre)) return;
@@ -876,13 +901,15 @@
         if (termEl) termEl.style.display = "none";
     }
 
-    document.addEventListener(
+    // on the window, capturing: the first to hear a key, before anything of
+    // Spotify's that might keep it to itself
+    window.addEventListener(
         "keydown",
         (e) => {
             const t = e.target;
             const typing =
                 t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
-            if (!typing && e.key === ":") {
+            if (!typing && e.key === ":" && !e.ctrlKey && !e.altKey && !e.metaKey) {
                 e.preventDefault();
                 e.stopPropagation();
                 openTerminal();
@@ -944,6 +971,8 @@
 
     try {
         new Spicetify.Menu.Item("termspot settings", false, openSettings).register();
+        // the terminal from the menu too, for when ":" doesn't get through
+        new Spicetify.Menu.Item("termspot terminal", false, openTerminal).register();
     } catch (e) {
         console.error("[termspot] menu registration failed:", e);
     }
@@ -996,8 +1025,29 @@
         true
     );
 
+    // The lyrics page on Spotify 1.3+ marks its lines only with generated
+    // class names: the line drawn in the active color is the one being sung
+    // (each other line shares its color with others), the ones above it are
+    // past. Marked for user.css's ">> " cursor and its glow (with attributes:
+    // Spotify rewrites the lines' class lists as they're sung).
+    function markLyrics() {
+        const box = document.querySelector('main div[style*="--lyrics-color-active"]');
+        if (!box) return;
+        const lines = [...box.querySelectorAll('div[dir="auto"]')];
+        if (lines.length < 3) return;
+        const colors = lines.map((l) => getComputedStyle(l).color);
+        const count = {};
+        colors.forEach((c) => (count[c] = (count[c] || 0) + 1));
+        const active = colors.findIndex((c) => count[c] === 1);
+        lines.forEach((l, i) => {
+            l.toggleAttribute("data-termspot-active", i === active);
+            l.toggleAttribute("data-termspot-past", active > 0 && i < active);
+        });
+    }
+
     applyCrtKnobs();
     tick();
+    setInterval(safely(markLyrics), 300);
     setInterval(safely(renderProgress), 500);
     setInterval(safely(updateMonoFilter), 1000);
     let obsTimer = 0;
