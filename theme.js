@@ -1031,18 +1031,19 @@
     // past. Marked for user.css's ">> " cursor and its glow (with attributes:
     // Spotify rewrites the lines' class lists as they're sung).
     function markLyrics() {
-        const box = document.querySelector('main div[style*="--lyrics-color-active"]');
-        if (!box) return;
-        const lines = [...box.querySelectorAll('div[dir="auto"]')];
-        if (lines.length < 3) return;
-        const colors = lines.map((l) => getComputedStyle(l).color);
-        const count = {};
-        colors.forEach((c) => (count[c] = (count[c] || 0) + 1));
-        const active = colors.findIndex((c) => count[c] === 1);
-        lines.forEach((l, i) => {
-            l.toggleAttribute("data-termspot-active", i === active);
-            l.toggleAttribute("data-termspot-past", active > 0 && i < active);
-        });
+        // (the lyrics page, the expanded view and the side panel's card alike)
+        for (const box of document.querySelectorAll('div[style*="--lyrics-color-active"]')) {
+            const lines = [...box.querySelectorAll('div[dir="auto"]')];
+            if (lines.length < 3) continue;
+            const colors = lines.map((l) => getComputedStyle(l).color);
+            const count = {};
+            colors.forEach((c) => (count[c] = (count[c] || 0) + 1));
+            const active = colors.findIndex((c) => count[c] === 1);
+            lines.forEach((l, i) => {
+                l.toggleAttribute("data-termspot-active", i === active);
+                l.toggleAttribute("data-termspot-past", active > 0 && i < active);
+            });
+        }
     }
 
     applyCrtKnobs();
