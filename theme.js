@@ -351,7 +351,9 @@
     function npvCover() {
         const named = document.querySelector(".main-nowPlayingView-coverArt");
         if (named) return named;
-        const img = document.querySelector('aside:not([data-testid="now-playing-bar"]) a[data-testid="context-link"] img');
+        const img =
+            document.querySelector('aside:not([data-testid="now-playing-bar"]) a[data-testid="context-link"] img') ||
+            document.querySelector('aside:not([data-testid="now-playing-bar"]) [data-testid="cover-art-slot"] img');
         const host = img && img.parentElement;
         if (host) host.classList.add("termspot-npv-cover");
         return host || null;
